@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Super_Kitty_Game
+/*namespace Super_Kitty_Game
 {
 #if WINDOWS || LINUX
     /// <summary>
@@ -19,4 +19,30 @@ namespace Super_Kitty_Game
         }
     }
 #endif
+}*/
+using System;
+using System.Windows.Forms;
+
+namespace Super_Kitty_Game
+{
+#if WINDOWS || XBOX
+    static class Program
+    {
+        static void Main(string[] args)
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Start start = new Start();
+            while (start.ShowDialog() == DialogResult.OK)
+            {
+                using (Game1 game = new Game1())
+                {
+                    game.Run();
+                }
+            }
+        }
+    }
+#endif
 }
+
+

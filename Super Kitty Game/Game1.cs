@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Net.Sockets;
 
 namespace Super_Kitty_Game
 {
@@ -15,24 +16,27 @@ namespace Super_Kitty_Game
         string MasterIP = "192.168.1.3";
 
         Player player;
+        UdpClient client;
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
+            graphics.PreferredBackBufferWidth = 1000;
+            graphics.PreferredBackBufferHeight = 1000;
             Content.RootDirectory = "Content";
         }
 
         protected override void Initialize()
         {
             base.Initialize();
+            player = new Player(kittyTexture, new Point(graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height));
+            client = new UdpClient(9999);
         }
 
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             kittyTexture = Content.Load<Texture2D>("kitty.png");
-
-            player = new Player(kittyTexture, new Point(graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height));
         }
 
         protected override void UnloadContent()

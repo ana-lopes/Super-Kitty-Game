@@ -4,7 +4,7 @@ using System;
 
 namespace Super_Kitty_Game
 {
-    public class Player : Sprite
+    public class Player : Cat
     {
         Vector2 velocity;
         Vector2 arenaSize;
@@ -34,14 +34,14 @@ namespace Super_Kitty_Game
             Vector2 direction = accelleration * Controller.GetDirection();
             velocity += direction;
 
-            if (direction.X > 0)
+            if (velocity.X > 0)
                 efeito = SpriteEffects.FlipHorizontally;
             else
                 efeito = SpriteEffects.None;
 
             Vector2 newPosition = Clamp(
                 (float)gameTime.ElapsedGameTime.TotalSeconds * velocity + GetPosition(),
-                Vector2.Zero, arenaSize - DrawSize.ToVector2());
+                Vector2.Zero, arenaSize - new Vector2(DrawSize.X, DrawSize.Y));
             SetPosition(newPosition);
 
             base.Update(gameTime);
