@@ -35,7 +35,7 @@ namespace Super_Kitty_Game
             Start start = new Start();
             while (start.ShowDialog() == DialogResult.OK)
             {
-                using (Game1 game = new Game1())
+                using (Game1 game = new Game1(start.client))
                 {
                     game.Run();
                 }

@@ -10,7 +10,7 @@ namespace Super_Kitty_Game
         Vector2 arenaSize;
         float accelleration = 20f;
 
-        public Player(Texture2D texture, Point arenaSize) : base(texture)
+        public Player(string ip, int port, Point arenaSize) : base(ip, port)
         {
             this.arenaSize = new Vector2(arenaSize.X, arenaSize.Y);
             Random rnd = new Random();
