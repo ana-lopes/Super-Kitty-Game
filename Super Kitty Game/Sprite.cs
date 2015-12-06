@@ -10,6 +10,7 @@ namespace Super_Kitty_Game
         Point SpriteSize;
         protected Point DrawSize = new Point(300, 300);
         protected Vector2 position = new Vector2(400, 300);
+        protected Color color = Color.White;
 
         Point currentFrame = new Point(0, 0);
         Point frameSize;
@@ -81,7 +82,7 @@ namespace Super_Kitty_Game
 
         public virtual void Draw(SpriteBatch sb, GameTime gameTime)
         {
-            sb.Draw(sprite, position, new Rectangle(currentFrame.X * frameSize.X, currentFrame.Y * frameSize.Y, frameSize.X, frameSize.Y), Color.White, 0, Vector2.Zero, 1, efeito, 1);
+            sb.Draw(sprite, position, new Rectangle(currentFrame.X * frameSize.X, currentFrame.Y * frameSize.Y, frameSize.X, frameSize.Y), color, 0, Vector2.Zero, 1, efeito, 1);
         }
 
     }

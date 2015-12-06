@@ -65,8 +65,11 @@ namespace Super_Kitty_Game
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
-            foreach (Cat cat in cats.Values)
-                cat.Draw(spriteBatch, gameTime);
+            lock (client.catsLock)
+            {
+                foreach (Cat cat in cats.Values)
+                    cat.Draw(spriteBatch, gameTime);
+            }
             spriteBatch.End();
 
             base.Draw(gameTime);

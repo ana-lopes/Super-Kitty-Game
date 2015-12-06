@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using Microsoft.Xna.Framework;
 using System.Net;
 using System.IO;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Super_Kitty_Game
 {
@@ -16,12 +17,15 @@ namespace Super_Kitty_Game
 
         public const int MasterPort = 9999, NormalPort = 8888;
         protected const byte registryRequestByte = (byte)'M', registryAcceptByte = (byte)'L', positionsByte = (byte)'P';
+        protected const byte imHereByte = (byte)'I';
 
+        public Object catsLock = new Object();
         public Dictionary<IPEndPoint, Cat> cats;
         protected bool registered;
         protected IPEndPoint masterEP;
+
         protected byte[] receivedMSG;
-        protected IPEndPoint remoteEndPoint;
+        protected IPEndPoint remoteEP;
 
         public MyUDPClient(int port, string masterIP)
             : base(port)
@@ -34,60 +38,113 @@ namespace Super_Kitty_Game
         public virtual void Update(GameTime gameTime)
         {
             if (!registered)
-                GetRegistered();
+                SendRequest();
+            else
+            {
+                sendTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (sendTimer >= sendInterval)
+                {
+                    SendPosition();
+                }
+            }
 
             BeginReceive(Receive, null);
         }
 
-        public void GetRegistered()
+        private void SendRequest()
         {
             MemoryStream s = new MemoryStream();
             BinaryWriter w = new BinaryWriter(s);
             w.Write(registryRequestByte);
-            Cat cat = cats.Values.First();
+            Cat cat;
+            lock (catsLock)
+            {
+                cat = cats.Values.First();
+            }
             Vector2 position = cat.GetPosition();
-            w.Write((double)position.X);
-            w.Write((double)position.Y);
-            w.Write((UInt32)cat.efeito);
+            w.Write((Int16)position.X);
+            w.Write((Int16)position.Y);
+            w.Write((Int16)cat.efeito);
 
             Send(s.GetBuffer(), s.GetBuffer().Length, masterEP);
+
+            s.Dispose();
+            w.Dispose();
+        }
+
+        private void SendPosition()
+        {
+            MemoryStream s = new MemoryStream();
+            BinaryWriter w = new BinaryWriter(s);
+            w.Write(imHereByte);
+            Cat cat;
+            lock (catsLock)
+            {
+                cat = cats.Values.First();
+            }
+            Vector2 position = cat.GetPosition();
+            w.Write((Int16)position.X);
+            w.Write((Int16)position.Y);
+            w.Write((Int16)cat.efeito);
+
+            Send(s.GetBuffer(), s.GetBuffer().Length, masterEP);
+
+            s.Dispose();
+            w.Dispose();
         }
 
         protected virtual void Receive(IAsyncResult result)
         {   
-            remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            receivedMSG = EndReceive(result, ref remoteEndPoint); 
+            remoteEP = new IPEndPoint(IPAddress.Any, 0);
+            receivedMSG = EndReceive(result, ref remoteEP); 
             
-            Console.WriteLine("Received from " + remoteEndPoint.Address.ToString() + " with type " + (char)receivedMSG[0]);
+            Console.WriteLine("Received from " + remoteEP.Address.ToString() + " with type " + (char)receivedMSG[0]);
 
             if (receivedMSG[0] == registryAcceptByte)
             {
-                registered = true;
+                ReceiveRegistry();
             }
             else if (receivedMSG[0] == positionsByte)
             {
-                MemoryStream s = new MemoryStream(receivedMSG);
-                BinaryReader r = new BinaryReader(s);
+                ReceivePositions();
+            }
+        }
 
-                r.ReadByte();
-                uint count = r.ReadUInt32();
-                for (int i = 0; i < count; i++)
+        private void ReceiveRegistry()
+        {
+            registered = true;
+        }
+
+        private void ReceivePositions()
+        {
+            MemoryStream s = new MemoryStream(receivedMSG);
+            BinaryReader r = new BinaryReader(s);
+
+            r.ReadByte();
+            int count = r.ReadUInt16();
+            for (int i = 0; i < count; i++)
+            {
+                IPAddress ip = new IPAddress(r.ReadBytes(4));
+                int port = r.ReadUInt16();
+                IPEndPoint ep = new IPEndPoint(ip, port);
+                lock (catsLock)
                 {
-                    IPAddress ip = new IPAddress(r.ReadBytes(4));
-                    uint port = r.ReadUInt32();
-                    IPEndPoint ep = new IPEndPoint(ip, (int)port);
-                    Vector2 position = new Vector2((float)r.ReadDouble(), (float)r.ReadDouble());
-                    if (!cats.ContainsKey(ep))
+                    if (ep.ToString() != cats.First().Key.ToString())
                     {
-                        Cat newCat = new Cat(ep);
-                        cats.Add(ep, newCat);
-                        newCat.SetPosition(position);
+                        Vector2 position = new Vector2(r.ReadInt16(), r.ReadInt16());
+                        if (!cats.ContainsKey(ep))
+                        {
+                            Cat newCat = new Cat(ep);
+                            cats.Add(ep, newCat);
+                        }
+                        cats[ep].SetPosition(position);
+                        cats[ep].efeito = (SpriteEffects)r.ReadInt16();
                     }
                 }
-
-                s.Dispose();
-                r.Dispose();
             }
+
+            s.Dispose();
+            r.Dispose(); 
         }
     }
 }

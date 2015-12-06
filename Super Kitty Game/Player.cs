@@ -14,6 +14,7 @@ namespace Super_Kitty_Game
         {
             this.arenaSize = new Vector2(arenaSize.X, arenaSize.Y);
             Random rnd = new Random();
+            color = Color.Red;
 
             base.SetPosition(rnd.Next(arenaSize.X - base.DrawSize.X) + base.DrawSize.X,
                              rnd.Next(arenaSize.Y - base.DrawSize.Y) - base.DrawSize.Y);
