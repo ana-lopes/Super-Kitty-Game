@@ -28,7 +28,7 @@ namespace Super_Kitty_Game
             return p;
         }
 
-        override public void Update(GameTime gameTime)
+        override public void Update(float elapsedGameTime)
         {
             velocity *= 0.98f;
 
@@ -41,11 +41,11 @@ namespace Super_Kitty_Game
                 efeito = SpriteEffects.None;
 
             Vector2 newPosition = Clamp(
-                (float)gameTime.ElapsedGameTime.TotalSeconds * velocity + GetPosition(),
+                elapsedGameTime * velocity + GetPosition(),
                 Vector2.Zero, arenaSize - new Vector2(DrawSize.X, DrawSize.Y));
             SetPosition(newPosition);
 
-            base.Update(gameTime);
+            base.Update(elapsedGameTime * velocity.Length() * 0.01f);
         }
 
     }

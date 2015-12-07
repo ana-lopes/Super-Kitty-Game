@@ -41,9 +41,10 @@ namespace Super_Kitty_Game
             DrawSize.Y = (int)((float)DrawSize.X * (float)SpriteSize.Y / (float)SpriteSize.X);
         }
 
-        public virtual void Update(GameTime gameTime)
+        public virtual void Update(float elapsedGameTime)
         {
-            time += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            //time += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            time += elapsedGameTime;
 
             if(time >= frameDuration)
             {

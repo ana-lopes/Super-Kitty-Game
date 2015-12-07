@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using System.Net;
 using System.IO;
 using Microsoft.Xna.Framework.Graphics;
+using System.Windows.Forms;
 
 namespace Super_Kitty_Game
 {
@@ -23,10 +24,7 @@ namespace Super_Kitty_Game
         public Dictionary<IPEndPoint, Cat> cats;
         protected bool registered;
         protected IPEndPoint masterEP;
-
-        protected byte[] receivedMSG;
-        protected IPEndPoint remoteEP;
-
+                
         public MyUDPClient(int port, string masterIP)
             : base(port)
         {
@@ -34,7 +32,7 @@ namespace Super_Kitty_Game
             Client.EnableBroadcast = true;
             masterEP = new IPEndPoint(IPAddress.Parse(masterIP), MasterPort);
         }
-
+        
         public virtual void Update(GameTime gameTime)
         {
             if (!registered)
@@ -47,7 +45,7 @@ namespace Super_Kitty_Game
                     SendPosition();
                 }
             }
-
+            
             BeginReceive(Receive, null);
         }
 
@@ -95,18 +93,26 @@ namespace Super_Kitty_Game
 
         protected virtual void Receive(IAsyncResult result)
         {   
-            remoteEP = new IPEndPoint(IPAddress.Any, 0);
-            receivedMSG = EndReceive(result, ref remoteEP); 
-            
-            Console.WriteLine("Received from " + remoteEP.Address.ToString() + " with type " + (char)receivedMSG[0]);
+            try
+            {
+                IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
+                byte[] receivedMSG = EndReceive(result, ref remoteEP);
 
-            if (receivedMSG[0] == registryAcceptByte)
-            {
-                ReceiveRegistry();
+                Console.WriteLine("Received from " + remoteEP.Address.ToString() + " with type " + (char)receivedMSG[0]);
+
+                if (receivedMSG[0] == registryAcceptByte)
+                {
+                    ReceiveRegistry();
+                }
+                else if (receivedMSG[0] == positionsByte)
+                {
+                    ReceivePositions(receivedMSG);
+                }
             }
-            else if (receivedMSG[0] == positionsByte)
+            catch (SocketException e)
             {
-                ReceivePositions();
+                MessageBox.Show("Connection lost");
+                Game1.instance.Exit();
             }
         }
 
@@ -115,7 +121,7 @@ namespace Super_Kitty_Game
             registered = true;
         }
 
-        private void ReceivePositions()
+        private void ReceivePositions(byte[] receivedMSG)
         {
             MemoryStream s = new MemoryStream(receivedMSG);
             BinaryReader r = new BinaryReader(s);

@@ -121,6 +121,7 @@ namespace Super_Kitty_Game
 
             lock (catsLock)
             {
+
                 if (cats.ContainsKey(remoteEP))
                 {
                     cats[remoteEP].SetPosition(new Vector2(x, y));

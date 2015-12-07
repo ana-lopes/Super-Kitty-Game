@@ -10,6 +10,7 @@ namespace Super_Kitty_Game
 {
     public class Game1 : Game
     {
+        public static Game1 instance;
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public static Texture2D kittyTexture;
@@ -20,9 +21,10 @@ namespace Super_Kitty_Game
 
         public Game1(MyUDPClient client)
         {
+            instance = this;
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 1000;
-            graphics.PreferredBackBufferHeight = 1000;
+            graphics.PreferredBackBufferWidth = 300;
+            graphics.PreferredBackBufferHeight = 300;
             this.client = client;
             Content.RootDirectory = "Content";
             this.client.cats = cats;
@@ -55,7 +57,7 @@ namespace Super_Kitty_Game
         protected override void Update(GameTime gameTime)
         {
             client.Update(gameTime);
-            player.Update(gameTime);
+            player.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             base.Update(gameTime);
         }

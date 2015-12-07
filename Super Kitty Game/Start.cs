@@ -13,9 +13,11 @@ namespace Super_Kitty_Game
 {
     public partial class Start : Form
     {
+        public static Start instance;
         public MyUDPClient client;
         public Start()
         {
+            instance = this;
             InitializeComponent();
         }
 
