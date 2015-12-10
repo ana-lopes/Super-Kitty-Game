@@ -20,10 +20,11 @@ namespace Super_Kitty_Game
         protected const byte registryRequestByte = (byte)'M', registryAcceptByte = (byte)'L', positionsByte = (byte)'P';
         protected const byte imHereByte = (byte)'I';
 
-        public Object catsLock = new Object();
-        public Dictionary<IPEndPoint, Cat> cats;
+        private Object catsLock = new Object();
+        private Dictionary<IPEndPoint, Cat> cats;
         protected bool registered;
-        protected IPEndPoint masterEP;
+        private IPEndPoint masterEP;
+        private bool exiting = false;
                 
         public MyUDPClient(int port, string masterIP)
             : base(port)
@@ -43,10 +44,18 @@ namespace Super_Kitty_Game
                 if (sendTimer >= sendInterval)
                 {
                     SendPosition();
+                    sendTimer = 0;
                 }
             }
-            
-            BeginReceive(Receive, null);
+            /*
+            try
+            {*/
+                BeginReceive(Receive, null);
+            /*}
+            catch
+            {
+                Exit("Connection lost");
+            }*/
         }
 
         private void SendRequest()
@@ -59,7 +68,7 @@ namespace Super_Kitty_Game
             {
                 cat = cats.Values.First();
             }
-            Vector2 position = cat.GetPosition();
+            Vector2 position = cat.Position;
             w.Write((Int16)position.X);
             w.Write((Int16)position.Y);
             w.Write((Int16)cat.efeito);
@@ -80,10 +89,11 @@ namespace Super_Kitty_Game
             {
                 cat = cats.Values.First();
             }
-            Vector2 position = cat.GetPosition();
+            Vector2 position = cat.Position;
             w.Write((Int16)position.X);
             w.Write((Int16)position.Y);
             w.Write((Int16)cat.efeito);
+            w.Write((Int16)cat.Speed);
 
             Send(s.GetBuffer(), s.GetBuffer().Length, masterEP);
 
@@ -91,8 +101,8 @@ namespace Super_Kitty_Game
             w.Dispose();
         }
 
-        protected virtual void Receive(IAsyncResult result)
-        {   
+        protected void Receive(IAsyncResult result)
+        {
             try
             {
                 IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
@@ -100,20 +110,36 @@ namespace Super_Kitty_Game
 
                 Console.WriteLine("Received from " + remoteEP.Address.ToString() + " with type " + (char)receivedMSG[0]);
 
-                if (receivedMSG[0] == registryAcceptByte)
-                {
-                    ReceiveRegistry();
-                }
-                else if (receivedMSG[0] == positionsByte)
-                {
-                    ReceivePositions(receivedMSG);
-                }
+                DecodeMessage(remoteEP, receivedMSG);
             }
             catch (SocketException e)
             {
-                MessageBox.Show("Connection lost");
-                Game1.instance.Exit();
+                Exit("Connection lost");
             }
+            catch (ObjectDisposedException e)
+            { }
+        }
+
+        protected void Exit(string reason)
+        { 
+            if (!exiting)
+            {
+                exiting = true;
+                MessageBox.Show(reason);
+                Game1.Instance.Exit();
+            }
+        }
+
+        protected virtual void DecodeMessage(IPEndPoint remoteEP, byte[] receivedMSG)
+        {
+            if (receivedMSG[0] == registryAcceptByte)
+            {
+                ReceiveRegistry();
+            }
+            else if (receivedMSG[0] == positionsByte)
+            {
+                ReceivePositions(receivedMSG);
+            } 
         }
 
         private void ReceiveRegistry()
@@ -138,19 +164,41 @@ namespace Super_Kitty_Game
                     if (ep.ToString() != cats.First().Key.ToString())
                     {
                         Vector2 position = new Vector2(r.ReadInt16(), r.ReadInt16());
-                        if (!cats.ContainsKey(ep))
+                        Cat cat;
+                        if (!cats.TryGetValue(ep, out cat))
                         {
-                            Cat newCat = new Cat(ep);
-                            cats.Add(ep, newCat);
+                            cat = new Cat(ep);
+                            cats.Add(ep, cat);
                         }
-                        cats[ep].SetPosition(position);
-                        cats[ep].efeito = (SpriteEffects)r.ReadInt16();
+                        cat.SetPosition(position);
+                        cat.efeito = (SpriteEffects)r.ReadInt16();
+                        cat.Speed = r.ReadInt16();
                     }
                 }
             }
 
             s.Dispose();
             r.Dispose(); 
+        }
+
+        public Object CatsLock
+        {
+            get { return catsLock; }
+        }
+
+        public Dictionary<IPEndPoint, Cat> Cats
+        {
+            get { return cats; }
+            set
+            {
+                if (cats == null)
+                    cats = value;
+            }
+        }
+
+        public IPEndPoint MasterEP
+        {
+            get { return masterEP; }
         }
     }
 }

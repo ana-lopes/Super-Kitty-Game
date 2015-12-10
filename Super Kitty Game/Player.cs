@@ -6,9 +6,8 @@ namespace Super_Kitty_Game
 {
     public class Player : Cat
     {
-        Vector2 velocity;
-        Vector2 arenaSize;
-        float accelleration = 20f;
+        private Vector2 arenaSize;
+        private float accelleration = 20f;
 
         public Player(string ip, int port, Point arenaSize) : base(ip, port)
         {
@@ -16,16 +15,9 @@ namespace Super_Kitty_Game
             Random rnd = new Random();
             color = Color.Red;
 
-            base.SetPosition(rnd.Next(arenaSize.X - base.DrawSize.X) + base.DrawSize.X,
-                             rnd.Next(arenaSize.Y - base.DrawSize.Y) - base.DrawSize.Y);
+            base.SetPosition(rnd.Next(arenaSize.X - base.drawSize.X) + base.drawSize.X,
+                             rnd.Next(arenaSize.Y - base.drawSize.Y) - base.drawSize.Y);
             velocity = new Vector2();
-        }
-
-        private Vector2 Clamp(Vector2 p, Vector2 minimum, Vector2 maximum)
-        {
-            p.X = p.X < minimum.X ? minimum.X : (p.X > maximum.X ? maximum.X : p.X);
-            p.Y = p.Y < minimum.Y ? minimum.Y : (p.Y > maximum.Y ? maximum.Y : p.Y);
-            return p;
         }
 
         override public void Update(float elapsedGameTime)
@@ -40,13 +32,10 @@ namespace Super_Kitty_Game
             else
                 efeito = SpriteEffects.None;
 
-            Vector2 newPosition = Clamp(
-                elapsedGameTime * velocity + GetPosition(),
-                Vector2.Zero, arenaSize - new Vector2(DrawSize.X, DrawSize.Y));
+            Vector2 newPosition = Vector2.Clamp(
+                elapsedGameTime * velocity + Position,
+                Vector2.Zero, arenaSize - new Vector2(drawSize.X, drawSize.Y));
             SetPosition(newPosition);
-
-            base.Update(elapsedGameTime * velocity.Length() * 0.01f);
         }
-
     }
 }

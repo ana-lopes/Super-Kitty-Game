@@ -5,19 +5,20 @@ using System.Net.Sockets;
 using System.Collections.Generic;
 using System.Net;
 using System.Linq;
+using System;
 
 namespace Super_Kitty_Game
 {
     public class Game1 : Game
     {
-        public static Game1 instance;
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-        public static Texture2D kittyTexture;
+        private static Game1 instance;
+        private GraphicsDeviceManager graphics;
+        private SpriteBatch spriteBatch;
+        private static Texture2D kittyTexture;
 
-        Dictionary<IPEndPoint, Cat> cats = new Dictionary<IPEndPoint,Cat>();
-        Player player;
-        MyUDPClient client;
+        private Dictionary<IPEndPoint, Cat> cats = new Dictionary<IPEndPoint,Cat>();
+        private Player player;
+        private MyUDPClient client;
 
         public Game1(MyUDPClient client)
         {
@@ -25,9 +26,10 @@ namespace Super_Kitty_Game
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferWidth = 300;
             graphics.PreferredBackBufferHeight = 300;
-            this.client = client;
             Content.RootDirectory = "Content";
-            this.client.cats = cats;
+
+            this.client = client;
+            this.client.Cats = cats;
         }
 
         protected override void Initialize()
@@ -40,7 +42,7 @@ namespace Super_Kitty_Game
                 port = MyUDPClient.NormalPort;
             player = new Player(Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString()
                 , port, new Point(graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height));
-            cats.Add(player.endpoint, player);
+            cats.Add(player.EndPoint, player);
         }
 
         protected override void LoadContent()
@@ -51,7 +53,7 @@ namespace Super_Kitty_Game
 
         protected override void UnloadContent()
         {
-            
+            client.Close();
         }
 
         protected override void Update(GameTime gameTime)
@@ -67,14 +69,24 @@ namespace Super_Kitty_Game
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
-            lock (client.catsLock)
+            lock (client.CatsLock)
             {
                 foreach (Cat cat in cats.Values)
-                    cat.Draw(spriteBatch, gameTime);
+                    cat.Draw(spriteBatch, (float)gameTime.ElapsedGameTime.TotalSeconds);
             }
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        static public Game1 Instance
+        {
+            get { return instance; }
+        }
+
+        static public Texture2D KittyTexture
+        {
+            get { return kittyTexture; }
         }
     }
 }

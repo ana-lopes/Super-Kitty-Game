@@ -13,8 +13,9 @@ namespace Super_Kitty_Game
 {
     public partial class Start : Form
     {
-        public static Start instance;
-        public MyUDPClient client;
+        private static Start instance;
+        private MyUDPClient client;
+
         public Start()
         {
             instance = this;
@@ -39,6 +40,16 @@ namespace Super_Kitty_Game
         private void Start_Load(object sender, EventArgs e)
         {
 
+        }
+
+        public MyUDPClient Client
+        {
+            get { return client; }
+        }
+
+        public Start Instance
+        {
+            get { return instance; }
         }
     }
 }

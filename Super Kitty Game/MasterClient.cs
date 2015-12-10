@@ -24,6 +24,7 @@ namespace Super_Kitty_Game
             if (sendTimer >= sendInterval)
             {
                 SendPositions();
+                sendTimer = 0;
             }
             BeginReceive(Receive, null);
         }
@@ -34,23 +35,24 @@ namespace Super_Kitty_Game
             BinaryWriter w = new BinaryWriter(s);
 
             w.Write(positionsByte);
-            lock (catsLock)
+            lock (CatsLock)
             {
-                w.Write((UInt16)cats.Count);
-                foreach (Cat cat in cats.Values)
+                w.Write((UInt16)Cats.Count);
+                foreach (Cat cat in Cats.Values)
                 {
-                    byte[] ipBytes = cat.endpoint.Address.GetAddressBytes();
+                    byte[] ipBytes = cat.EndPoint.Address.GetAddressBytes();
                     w.Write(ipBytes);
-                    w.Write((UInt16)cat.endpoint.Port);
-                    Vector2 position = cat.GetPosition();
+                    w.Write((UInt16)cat.EndPoint.Port);
+                    Vector2 position = cat.Position;
                     w.Write((Int16)position.X);
                     w.Write((Int16)position.Y);
                     w.Write((Int16)cat.efeito);
+                    w.Write((Int16)cat.Speed);
                 }
 
-                foreach (IPEndPoint ep in cats.Keys)
+                foreach (IPEndPoint ep in Cats.Keys)
                 {
-                    if (ep.ToString() != masterEP.ToString())
+                    if (ep.ToString() != MasterEP.ToString())
                     {
                         try
                         {
@@ -65,20 +67,20 @@ namespace Super_Kitty_Game
             w.Dispose(); 
         }
 
-        protected override void Receive(IAsyncResult result)
+        protected override void DecodeMessage(IPEndPoint remoteEP, byte[] receivedMSG)
         {
-            base.Receive(result);
+            base.DecodeMessage(remoteEP, receivedMSG);
             if (receivedMSG[0] == registryRequestByte)
             {
-                ReceiveRequest();
+                ReceiveRequest(remoteEP, receivedMSG);
             }
             else if (receivedMSG[0] == imHereByte)
             {
-                ReceivePosition();
+                ReceivePosition(remoteEP, receivedMSG);
             }
         }
 
-        private void ReceiveRequest()
+        private void ReceiveRequest(IPEndPoint remoteEP, byte[] receivedMSG)
         {
             MemoryStream s = new MemoryStream();
             BinaryWriter w = new BinaryWriter(s);
@@ -95,12 +97,12 @@ namespace Super_Kitty_Game
             int y = r.ReadInt16();
             int efeito = r.ReadInt16();
 
-            lock (catsLock)
+            lock (CatsLock)
             {
-                if (!cats.ContainsKey(remoteEP))
+                if (!Cats.ContainsKey(remoteEP))
                 {
                     Cat newCat = new Cat(remoteEP);
-                    cats.Add(remoteEP, newCat);
+                    Cats.Add(remoteEP, newCat);
                     newCat.SetPosition(new Vector2((float)x, (float)y));
                 }
             }
@@ -109,7 +111,7 @@ namespace Super_Kitty_Game
             r.Dispose();
         }
 
-        private void ReceivePosition()
+        private void ReceivePosition(IPEndPoint remoteEP, byte[] receivedMSG)
         {
             MemoryStream s = new MemoryStream(receivedMSG);
             BinaryReader r = new BinaryReader(s);
@@ -118,14 +120,16 @@ namespace Super_Kitty_Game
             int x = r.ReadInt16();
             int y = r.ReadInt16();
             int efeito = r.ReadInt16();
+            int speed = r.ReadInt16();
 
-            lock (catsLock)
+            lock (CatsLock)
             {
-
-                if (cats.ContainsKey(remoteEP))
+                Cat cat;
+                if (Cats.TryGetValue(remoteEP, out cat))
                 {
-                    cats[remoteEP].SetPosition(new Vector2(x, y));
-                    cats[remoteEP].efeito = (SpriteEffects)efeito;
+                    cat.SetPosition(new Vector2(x, y));
+                    cat.efeito = (SpriteEffects)efeito;
+                    cat.Speed = speed;
                 }
             }
 

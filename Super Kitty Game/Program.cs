@@ -1,6 +1,4 @@
-﻿using System;
-
-/*namespace Super_Kitty_Game
+﻿/*namespace Super_Kitty_Game
 {
 #if WINDOWS || LINUX
     /// <summary>
@@ -35,7 +33,7 @@ namespace Super_Kitty_Game
             Start start = new Start();
             while (start.ShowDialog() == DialogResult.OK)
             {
-                using (Game1 game = new Game1(start.client))
+                using (var game = new Game1(start.Client))
                 {
                     game.Run();
                 }

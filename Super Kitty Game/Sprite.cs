@@ -6,16 +6,16 @@ namespace Super_Kitty_Game
 {
     public class Sprite
     {
-        Texture2D sprite;
-        Point SpriteSize;
-        protected Point DrawSize = new Point(300, 300);
+        private Texture2D sprite;
+        private Point spriteSize;
+        protected Point drawSize = new Point(300, 300);
         protected Vector2 position = new Vector2(400, 300);
         protected Color color = Color.White;
 
-        Point currentFrame = new Point(0, 0);
-        Point frameSize;
-        float frameDuration = 0.1f;
-        float time = 0;
+        private Point currentFrame = new Point(0, 0);
+        private Point frameSize;
+        private float frameDuration = 0.1f;
+        private float time = 0;
 
         public SpriteEffects efeito = SpriteEffects.None;
 
@@ -23,40 +23,28 @@ namespace Super_Kitty_Game
         {
             sprite = texture;
 
-            SpriteSize = new Point(sprite.Width, sprite.Height);
+            spriteSize = new Point(sprite.Width, sprite.Height);
 
             frameSize = new Point(texture.Width/6, texture.Height/2);
 
             computeHeight();
 
-            DrawSize = frameSize;
+            drawSize = frameSize;
         }
 
-        public Vector2 GetPosition()
+        public Vector2 Position
         {
-            return new Vector2((float)position.X, (float)position.Y);
+            get { return position; }
         }
+
         private void computeHeight()
         {
-            DrawSize.Y = (int)((float)DrawSize.X * (float)SpriteSize.Y / (float)SpriteSize.X);
+            drawSize.Y = (int)((float)drawSize.X * (float)spriteSize.Y / (float)spriteSize.X);
         }
 
         public virtual void Update(float elapsedGameTime)
         {
-            //time += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            time += elapsedGameTime;
 
-            if(time >= frameDuration)
-            {
-                currentFrame.X++;
-
-                if(currentFrame.X > 5)
-                {
-                    currentFrame.X = 0;
-                }
-
-                time = 0;
-            }
         }
 
         public virtual Sprite SetPosition(Vector2 p)
@@ -76,13 +64,26 @@ namespace Super_Kitty_Game
         }
         public virtual Sprite SetDrawWidth(int width)
         {
-            DrawSize.X = width;
+            drawSize.X = width;
             computeHeight();
             return this;
         }
 
-        public virtual void Draw(SpriteBatch sb, GameTime gameTime)
+        public virtual void Draw(SpriteBatch sb, float elapsedGameTime)
         {
+            time += elapsedGameTime;
+
+            if (time >= frameDuration)
+            {
+                currentFrame.X++;
+
+                if (currentFrame.X > 5)
+                {
+                    currentFrame.X = 0;
+                }
+
+                time = 0;
+            }
             sb.Draw(sprite, position, new Rectangle(currentFrame.X * frameSize.X, currentFrame.Y * frameSize.Y, frameSize.X, frameSize.Y), color, 0, Vector2.Zero, 1, efeito, 1);
         }
 
