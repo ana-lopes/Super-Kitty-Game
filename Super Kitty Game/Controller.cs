@@ -9,11 +9,7 @@ namespace Super_Kitty_Game
         {
             KeyboardState k = Keyboard.GetState();
             Vector2 v = new Vector2();
-
-            if (k.IsKeyDown(Keys.Down))
-                v += Vector2.UnitY;
-            if (k.IsKeyDown(Keys.Up))
-                v -= Vector2.UnitY;
+            
             if (k.IsKeyDown(Keys.Left))
                 v -= Vector2.UnitX;
             if (k.IsKeyDown(Keys.Right))

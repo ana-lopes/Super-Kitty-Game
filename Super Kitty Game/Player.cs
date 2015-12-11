@@ -6,17 +6,16 @@ namespace Super_Kitty_Game
 {
     public class Player : Cat
     {
-        private Vector2 arenaSize;
-        private float accelleration = 20f;
+        
 
-        public Player(string ip, int port, Point arenaSize) : base(ip, port)
+        public Player(string ip, int port, Vector2 arenaSize) : base(ip, port, arenaSize)
         {
-            this.arenaSize = new Vector2(arenaSize.X, arenaSize.Y);
+           
             Random rnd = new Random();
             color = Color.Red;
 
-            base.SetPosition(rnd.Next(arenaSize.X - base.drawSize.X) + base.drawSize.X,
-                             rnd.Next(arenaSize.Y - base.drawSize.Y) - base.drawSize.Y);
+            base.SetPosition(rnd.Next((int)arenaSize.X - base.drawSize.X) + base.drawSize.X,
+                             (int)arenaSize.Y - base.drawSize.Y);
             velocity = new Vector2();
         }
 

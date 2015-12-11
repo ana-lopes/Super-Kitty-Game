@@ -24,8 +24,8 @@ namespace Super_Kitty_Game
         {
             instance = this;
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 300;
-            graphics.PreferredBackBufferHeight = 300;
+            graphics.PreferredBackBufferWidth = 1250;
+            graphics.PreferredBackBufferHeight = 750;
             Content.RootDirectory = "Content";
 
             this.client = client;
@@ -41,7 +41,7 @@ namespace Super_Kitty_Game
             else
                 port = MyUDPClient.NormalPort;
             player = new Player(Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString()
-                , port, new Point(graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height));
+                , port, new Vector2(graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height));
             cats.Add(player.EndPoint, player);
         }
 
