@@ -33,7 +33,7 @@ namespace Super_Kitty_Game
             Client.EnableBroadcast = true;
             masterEP = new IPEndPoint(IPAddress.Parse(masterIP), MasterPort);
         }
-        
+
         public virtual void Update(GameTime gameTime)
         {
             if (!registered)
@@ -153,17 +153,22 @@ namespace Super_Kitty_Game
             BinaryReader r = new BinaryReader(s);
 
             r.ReadByte();
+
             int count = r.ReadUInt16();
             for (int i = 0; i < count; i++)
             {
                 IPAddress ip = new IPAddress(r.ReadBytes(4));
                 int port = r.ReadUInt16();
+                int x = r.ReadInt16();
+                int y = r.ReadInt16();
+                SpriteEffects effect = (SpriteEffects)r.ReadInt16();
+                int speed = r.ReadInt16();
                 IPEndPoint ep = new IPEndPoint(ip, port);
                 lock (catsLock)
                 {
                     if (ep.ToString() != cats.First().Key.ToString())
                     {
-                        Vector2 position = new Vector2(r.ReadInt16(), r.ReadInt16());
+                        Vector2 position = new Vector2(x, y);
                         Cat cat;
                         if (!cats.TryGetValue(ep, out cat))
                         {
@@ -171,15 +176,17 @@ namespace Super_Kitty_Game
                             cats.Add(ep, cat);
                         }
                         cat.SetPosition(position);
-                        cat.efeito = (SpriteEffects)r.ReadInt16();
-                        cat.Speed = r.ReadInt16();
+                        cat.efeito = effect;
+                        cat.Speed = speed;
                     }
                 }
             }
 
+            Bullet.Read(r);                      
+
             s.Dispose();
             r.Dispose(); 
-        }
+        }        
 
         public Object CatsLock
         {

@@ -9,7 +9,7 @@ namespace Super_Kitty_Game
         private Texture2D sprite;
         private Point spriteSize;
         protected Point drawSize = new Point(300, 300);
-        protected Vector2 position = new Vector2(400, 300);
+        public Vector2 position = new Vector2(400, 300);
         protected Color color = Color.White;
 
         private Point currentFrame = new Point(0, 0);

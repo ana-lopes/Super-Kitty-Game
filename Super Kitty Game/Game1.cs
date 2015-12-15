@@ -24,8 +24,8 @@ namespace Super_Kitty_Game
         {
             instance = this;
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 1250;
-            graphics.PreferredBackBufferHeight = 750;
+            graphics.PreferredBackBufferWidth = 300;
+            graphics.PreferredBackBufferHeight = 600;
             Content.RootDirectory = "Content";
 
             this.client = client;

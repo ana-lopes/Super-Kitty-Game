@@ -50,6 +50,8 @@ namespace Super_Kitty_Game
                     w.Write((Int16)cat.Speed);
                 }
 
+                Bullet.Write(w, this);
+
                 foreach (IPEndPoint ep in Cats.Keys)
                 {
                     if (ep.ToString() != MasterEP.ToString())

@@ -16,6 +16,8 @@ namespace Super_Kitty_Game
         protected const float accelleration = 20f;
         protected Vector2 arenaSize;
 
+        protected List<Enemy> activeEnemies, inactiveEnemies;
+
         public Cat(string ip, int port, Vector2 arenaSize) : base(Game1.KittyTexture)
         {
             this.arenaSize = arenaSize;

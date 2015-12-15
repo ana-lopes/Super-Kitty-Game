@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
@@ -6,17 +8,18 @@ namespace Super_Kitty_Game
 {
     public class Player : Cat
     {
-        
-
         public Player(string ip, int port, Vector2 arenaSize) : base(ip, port, arenaSize)
-        {
-           
+        {           
             Random rnd = new Random();
             color = Color.Red;
 
             base.SetPosition(rnd.Next((int)arenaSize.X - base.drawSize.X) + base.drawSize.X,
                              (int)arenaSize.Y - base.drawSize.Y);
+
             velocity = new Vector2();
+
+            activeEnemies = new List<Enemy>();
+            inactiveEnemies = new List<Enemy>();
         }
 
         override public void Update(float elapsedGameTime)
@@ -35,6 +38,19 @@ namespace Super_Kitty_Game
                 elapsedGameTime * velocity + Position,
                 Vector2.Zero, arenaSize - new Vector2(drawSize.X, drawSize.Y));
             SetPosition(newPosition);
+
+            if (Controller.Shoot(elapsedGameTime))
+            {
+                Bullet.Shoot(position, true);
+            }
+
+            Bullet.UpdateAll(elapsedGameTime);
+        }
+
+        public override void Draw(SpriteBatch sb, float elapsedGameTime)
+        {
+            base.Draw(sb, elapsedGameTime);
+            Bullet.DrawAll(sb, elapsedGameTime);
         }
     }
 }

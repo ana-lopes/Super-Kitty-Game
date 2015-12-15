@@ -35,9 +35,10 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Bala.cs" />
+    <Compile Include="Bullet.cs" />
     <Compile Include="Cat.cs" />
     <Compile Include="Controller.cs" />
+    <Compile Include="Enemy.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="MasterClient.cs" />
     <Compile Include="MyUDPClient.cs" />
