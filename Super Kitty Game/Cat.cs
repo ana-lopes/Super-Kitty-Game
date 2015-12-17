@@ -14,18 +14,22 @@ namespace Super_Kitty_Game
         private IPEndPoint endpoint;
 
         protected const float accelleration = 20f;
-        protected Vector2 arenaSize;
+        static protected Vector2 arenaSize;
 
-        protected List<Enemy> activeEnemies, inactiveEnemies;
+        private List<Bullet> bullets;
+        private Object bulletLock = new Object();
 
-        public Cat(string ip, int port, Vector2 arenaSize) : base(Game1.KittyTexture)
+
+        public Cat(string ip, int port, Vector2 arena) : base(Game1.KittyTexture)
         {
-            this.arenaSize = arenaSize;
+            arenaSize = arena;
             this.endpoint = new IPEndPoint(IPAddress.Parse(ip), port);
+            bullets = new List<Bullet>();
         }
 
         public Cat(IPEndPoint ep) : base(Game1.KittyTexture)
         {
+            bullets = new List<Bullet>();
             this.endpoint = ep;
         }
 
@@ -33,13 +37,13 @@ namespace Super_Kitty_Game
         {
             velocity *= 0.98f;
 
-            Vector2 direction = accelleration * Controller.GetDirection();
+            /*Vector2 direction = accelleration * Controller.GetDirection();
             velocity += direction;
 
             if (velocity.X > 0)
                 efeito = SpriteEffects.FlipHorizontally;
             else
-                efeito = SpriteEffects.None;
+                efeito = SpriteEffects.None;*/
 
             Vector2 newPosition = Vector2.Clamp(
                 elapsedGameTime * velocity + Position,
@@ -67,6 +71,16 @@ namespace Super_Kitty_Game
         public IPEndPoint EndPoint
         {
             get { return endpoint; }
+        }
+
+        public List<Bullet> Bullets
+        {
+            get { return bullets; }
+        }
+
+        public Object BulletLock
+        {
+            get { return bulletLock; }
         }
     }
 }

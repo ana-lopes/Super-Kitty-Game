@@ -17,9 +17,6 @@ namespace Super_Kitty_Game
                              (int)arenaSize.Y - base.drawSize.Y);
 
             velocity = new Vector2();
-
-            activeEnemies = new List<Enemy>();
-            inactiveEnemies = new List<Enemy>();
         }
 
         override public void Update(float elapsedGameTime)
@@ -41,16 +38,9 @@ namespace Super_Kitty_Game
 
             if (Controller.Shoot(elapsedGameTime))
             {
-                Bullet.Shoot(position, true);
+                Bullet.Shoot(position, this);
             }
 
-            Bullet.UpdateAll(elapsedGameTime);
-        }
-
-        public override void Draw(SpriteBatch sb, float elapsedGameTime)
-        {
-            base.Draw(sb, elapsedGameTime);
-            Bullet.DrawAll(sb, elapsedGameTime);
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Super_Kitty_Game
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferWidth = 300;
             graphics.PreferredBackBufferHeight = 600;
+            this.IsMouseVisible = true;
             Content.RootDirectory = "Content";
 
             this.client = client;
@@ -58,8 +59,16 @@ namespace Super_Kitty_Game
 
         protected override void Update(GameTime gameTime)
         {
+            float elapsedGameTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            lock (client.CatsLock)
+            {
+                foreach (var cat in cats.Values)
+                {
+                    cat.Update(elapsedGameTime);
+                }
+            }
             client.Update(gameTime);
-            player.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+            Bullet.UpdateAll(elapsedGameTime);
 
             base.Update(gameTime);
         }
@@ -67,13 +76,15 @@ namespace Super_Kitty_Game
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+            float elapsedGameTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             spriteBatch.Begin();
             lock (client.CatsLock)
             {
                 foreach (Cat cat in cats.Values)
-                    cat.Draw(spriteBatch, (float)gameTime.ElapsedGameTime.TotalSeconds);
+                    cat.Draw(spriteBatch, elapsedGameTime);
             }
+            Bullet.DrawAll(spriteBatch, elapsedGameTime);
             spriteBatch.End();
 
             base.Draw(gameTime);

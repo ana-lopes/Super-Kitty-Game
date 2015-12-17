@@ -94,6 +94,7 @@ namespace Super_Kitty_Game
             w.Write((Int16)position.Y);
             w.Write((Int16)cat.efeito);
             w.Write((Int16)cat.Speed);
+            Bullet.Write(w, cat);
 
             Send(s.GetBuffer(), s.GetBuffer().Length, masterEP);
 
@@ -178,11 +179,11 @@ namespace Super_Kitty_Game
                         cat.SetPosition(position);
                         cat.efeito = effect;
                         cat.Speed = speed;
+                        Bullet.Read(r, cat);
                     }
                 }
             }
-
-            Bullet.Read(r);                      
+                     
 
             s.Dispose();
             r.Dispose(); 

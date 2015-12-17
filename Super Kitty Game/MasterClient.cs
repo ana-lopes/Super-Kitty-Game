@@ -48,9 +48,8 @@ namespace Super_Kitty_Game
                     w.Write((Int16)position.Y);
                     w.Write((Int16)cat.efeito);
                     w.Write((Int16)cat.Speed);
+                    Bullet.Write(w, cat);
                 }
-
-                Bullet.Write(w, this);
 
                 foreach (IPEndPoint ep in Cats.Keys)
                 {
@@ -132,6 +131,7 @@ namespace Super_Kitty_Game
                     cat.SetPosition(new Vector2(x, y));
                     cat.efeito = (SpriteEffects)efeito;
                     cat.Speed = speed;
+                    Bullet.Read(r, cat);
                 }
             }
 
