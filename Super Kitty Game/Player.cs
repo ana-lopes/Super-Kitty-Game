@@ -43,7 +43,7 @@ namespace Super_Kitty_Game
             {
                 Bullet.Shoot(position, true);
             }
-
+            
             Bullet.UpdateAll(elapsedGameTime);
         }
 

@@ -15,6 +15,7 @@ namespace Super_Kitty_Game
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private static Texture2D kittyTexture;
+        private static int arenaSizeX = 700, arenaSizeY = 600;
 
         private Dictionary<IPEndPoint, Cat> cats = new Dictionary<IPEndPoint,Cat>();
         private Player player;
@@ -24,8 +25,8 @@ namespace Super_Kitty_Game
         {
             instance = this;
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 300;
-            graphics.PreferredBackBufferHeight = 600;
+            graphics.PreferredBackBufferWidth = arenaSizeX;
+            graphics.PreferredBackBufferHeight = arenaSizeY;
             Content.RootDirectory = "Content";
 
             this.client = client;
@@ -43,6 +44,17 @@ namespace Super_Kitty_Game
             player = new Player(Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString()
                 , port, new Vector2(graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height));
             cats.Add(player.EndPoint, player);
+
+            if(client is MasterClient)
+            {
+                for (int x = 0; x < 8; x++)
+                {
+                    for (int y = 0; y < 5; y++)
+                    {
+                        new Enemy(new Vector2(50 + x * 60, y * 60));
+                    }
+                }
+            }
         }
 
         protected override void LoadContent()
@@ -61,6 +73,8 @@ namespace Super_Kitty_Game
             client.Update(gameTime);
             player.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
+            Enemy.UpdateAll((float)gameTime.ElapsedGameTime.TotalSeconds);
+
             base.Update(gameTime);
         }
 
@@ -74,6 +88,8 @@ namespace Super_Kitty_Game
                 foreach (Cat cat in cats.Values)
                     cat.Draw(spriteBatch, (float)gameTime.ElapsedGameTime.TotalSeconds);
             }
+
+            Enemy.DrawAll(spriteBatch, (float)gameTime.ElapsedGameTime.TotalSeconds);
             spriteBatch.End();
 
             base.Draw(gameTime);
@@ -87,6 +103,11 @@ namespace Super_Kitty_Game
         static public Texture2D KittyTexture
         {
             get { return kittyTexture; }
+        }
+
+        static public Vector2 ArenaSize
+        {
+            get { return new Vector2(arenaSizeX, arenaSizeY); } //fix this
         }
     }
 }

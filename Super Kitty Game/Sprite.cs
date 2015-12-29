@@ -17,6 +17,8 @@ namespace Super_Kitty_Game
         private float frameDuration = 0.1f;
         private float time = 0;
 
+        private Rectangle boundingBox; //collider
+
         public SpriteEffects efeito = SpriteEffects.None;
 
         public Sprite(Texture2D texture)
@@ -26,6 +28,8 @@ namespace Super_Kitty_Game
             spriteSize = new Point(sprite.Width, sprite.Height);
 
             frameSize = new Point(texture.Width/6, texture.Height/2);
+
+            boundingBox = new Rectangle((int)position.X, (int)position.Y, frameSize.X, frameSize.Y);
 
             computeHeight();
 
@@ -47,9 +51,16 @@ namespace Super_Kitty_Game
 
         }
 
+        public Rectangle BoundingBox
+        {
+            get { return boundingBox; }
+        }
+
         public virtual Sprite SetPosition(Vector2 p)
         {
-            this.position = p;
+            this.position = p;            
+            boundingBox.Location = new Point((int)position.X, (int)position.Y); //atualiza a posição do retangulo quando a sprite muda de posição
+
             return this;
         }
 
@@ -84,7 +95,7 @@ namespace Super_Kitty_Game
 
                 time = 0;
             }
-            sb.Draw(sprite, position, new Rectangle(currentFrame.X * frameSize.X, currentFrame.Y * frameSize.Y, frameSize.X, frameSize.Y), color, 0, Vector2.Zero, 1, efeito, 1);
+            sb.Draw(sprite, position, new Rectangle(currentFrame.X * frameSize.X, currentFrame.Y * frameSize.Y, frameSize.X, frameSize.Y), color, 0, Vector2.Zero, 1, efeito, 0);
         }
 
     }
