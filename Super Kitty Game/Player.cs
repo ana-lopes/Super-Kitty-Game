@@ -13,8 +13,8 @@ namespace Super_Kitty_Game
             Random rnd = new Random();
             color = Color.Red;
 
-            base.SetPosition(rnd.Next((int)arenaSize.X - base.drawSize.X) + base.drawSize.X,
-                             (int)arenaSize.Y - base.drawSize.Y);
+            base.SetPosition(new Vector2(rnd.Next((int)arenaSize.X - base.drawSize.X) + base.drawSize.X,
+                             (int)arenaSize.Y - base.drawSize.Y));
 
             velocity = new Vector2();
         }
@@ -40,7 +40,14 @@ namespace Super_Kitty_Game
             {
                 Bullet.Shoot(position, this);
             }
+            
+            Bullet.UpdateAll(elapsedGameTime);
+        }
 
+        public override void Draw(SpriteBatch sb, float elapsedGameTime)
+        {
+            base.Draw(sb, elapsedGameTime);
+            Bullet.DrawAll(sb, elapsedGameTime);
         }
     }
 }

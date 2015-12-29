@@ -55,15 +55,20 @@ namespace Super_Kitty_Game
 
         public static void UpdateAll(float elapsedGameTime)
         {
+            DetectColiision();
+
             List<Bullet> aux = new List<Bullet>();
             lock (bulletLock)
             {
                 foreach (Bullet b in activeBullets)
                 {
-
                     if (b.Update(elapsedGameTime))
                     {
-                        aux.Add(b);
+
+                        if (b.Update(elapsedGameTime))
+                        {
+                            aux.Add(b);
+                        }
                     }
                 }
             }
@@ -72,14 +77,30 @@ namespace Super_Kitty_Game
             {
                 b.Deactivate();
             }
+
+            
         }
 
         new private bool Update(float elapsedGameTime)
         {
             position.Y -= elapsedGameTime * speed;
+            SetPosition(position);
             if (position.Y < -drawSize.Y)
                 return true;
             return false;
+        }
+
+        //am i doing this right
+        public static void DetectColiision()
+        {
+            foreach(Bullet b in activeBullets)
+            {
+                foreach(Enemy e in Enemy.allEnemies)
+                {
+                    if (b.BoundingBox.Intersects(e.BoundingBox))
+                        Console.WriteLine("boop");
+                }
+            }
         }
 
         public static void Shoot(Vector2 position, Cat cat)
