@@ -20,14 +20,14 @@ namespace Super_Kitty_Game
         private Object bulletLock = new Object();
 
 
-        public Cat(string ip, int port, Vector2 arena) : base(Game1.KittyTexture)
+        public Cat(string ip, int port, Vector2 arena) : base(Game1.KittyTexture, 6, 2)
         {
             arenaSize = arena;
             this.endpoint = new IPEndPoint(IPAddress.Parse(ip), port);
             bullets = new List<Bullet>();
         }
 
-        public Cat(IPEndPoint ep) : base(Game1.KittyTexture)
+        public Cat(IPEndPoint ep) : base(Game1.KittyTexture, 6, 2)
         {
             bullets = new List<Bullet>();
             this.endpoint = ep;

@@ -17,7 +17,7 @@ namespace Super_Kitty_Game
         protected float sendTimer = 0;
 
         public const int MasterPort = 9999, NormalPort = 8888;
-        protected const byte registryRequestByte = (byte)'M', registryAcceptByte = (byte)'L', positionsByte = (byte)'P';
+        protected const byte registryRequestByte = (byte)'M', registryAcceptByte = (byte)'L', positionsByte = (byte)'P', enemyPositionByte = (byte)'E';
         protected const byte imHereByte = (byte)'I';
 
         private Object catsLock = new Object();

@@ -18,7 +18,7 @@ namespace Super_Kitty_Game
         private int index;
         private Cat owner; 
 
-        private Bullet(Vector2 position, Cat cat): base(Game1.KittyTexture)
+        private Bullet(Vector2 position, Cat cat): base(Game1.BulletTexture, 1, 1)
         {
             inactiveBullets.Add(this);
             Activate(position, cat);
@@ -48,18 +48,27 @@ namespace Super_Kitty_Game
                 if (activeBullets.Remove(this))
                     inactiveBullets.Add(this);
                 owner.Bullets.Remove(this);
+                UpdateList(owner.Bullets);
                 owner = null;
                 index = -1;
             }
         }
 
+        private static void UpdateList(List<Bullet> list)
+        {
+            foreach (Bullet b in list)
+            {
+                b.index = list.IndexOf(b);
+            }
+        }
+
         public static void UpdateAll(float elapsedGameTime)
         {
-            DetectColiision();
-
             List<Bullet> aux = new List<Bullet>();
             lock (bulletLock)
             {
+                DetectColiision();
+
                 foreach (Bullet b in activeBullets)
                 {
                     if (b.Update(elapsedGameTime))
@@ -71,14 +80,12 @@ namespace Super_Kitty_Game
                         }
                     }
                 }
-            }
 
-            foreach (Bullet b in aux)
-            {
-                b.Deactivate();
+                foreach (Bullet b in aux)
+                {
+                    b.Deactivate();
+                }
             }
-
-            
         }
 
         new private bool Update(float elapsedGameTime)
@@ -93,14 +100,23 @@ namespace Super_Kitty_Game
         //am i doing this right
         public static void DetectColiision()
         {
+            List<Bullet> aux = new List<Bullet>();
+
             foreach(Bullet b in activeBullets)
             {
-                foreach(Enemy e in Enemy.allEnemies)
+                foreach(Enemy e in Enemy.activeEnemies)
                 {
                     if (b.BoundingBox.Intersects(e.BoundingBox))
-                        Console.WriteLine("boop");
+                    {
+                        Enemy.activeEnemies.Remove(e);
+                        aux.Add(b);
+                        break;
+                    }
                 }
             }
+
+            foreach (Bullet b in aux)
+                b.Deactivate();
         }
 
         public static void Shoot(Vector2 position, Cat cat)
@@ -116,7 +132,7 @@ namespace Super_Kitty_Game
                     new Bullet(position, cat);
             }      
         }
-
+        
         public static void DrawAll(SpriteBatch sb, float elapsedGameTime)
         {
             lock (bulletLock)

@@ -42,6 +42,8 @@
     <Compile Include="Game1.cs" />
     <Compile Include="MasterClient.cs" />
     <Compile Include="MyUDPClient.cs" />
+    <Compile Include="PhysicsBody.cs" />
+    <Compile Include="PhysicsWorld.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -64,6 +66,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\laser.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\kitty.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

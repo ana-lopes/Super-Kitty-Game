@@ -14,9 +14,9 @@ namespace Super_Kitty_Game
             KeyboardState k = Keyboard.GetState();
             Vector2 v = new Vector2();
             
-            if (k.IsKeyDown(Keys.Left))
+            if (k.IsKeyDown(Keys.Left) || k.IsKeyDown(Keys.A))
                 v -= Vector2.UnitX;
-            if (k.IsKeyDown(Keys.Right))
+            if (k.IsKeyDown(Keys.Right) || k.IsKeyDown(Keys.D))
                 v += Vector2.UnitX;
 
             return v;

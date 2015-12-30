@@ -13,32 +13,63 @@ namespace Super_Kitty_Game
     {
         public static List<Enemy> activeEnemies = new List<Enemy>(), inactiveEnemies = new List<Enemy>(), allEnemies = new List<Enemy>();
 
+        private static Object enemyLock = new Object();
 
-
-        enum Direction { left, right, down};
         private bool isDown = false, isRight = true;
         int index;
-        private float timer = 0, moveNow = 0.1f; //move de 20 em 20 segundos
+        private float timer = 0, moveNow = 1.0f; //move de 20 em 20 segundos
+
+        static private float shootTimer = 0, shootNow = 1f;
 
         bool hitRight = false, hitLeft = false;
+        Rectangle rec;
 
-        public Enemy(Vector2 position): base(Game1.KittyTexture)
+        static Random randEnemy = new Random();
+        static int randomEnemy;
+
+        public Enemy(Vector2 position): base(Game1.KittyTexture, 6, 2)
         {
             allEnemies.Add(this);
+            activeEnemies.Add(this);
             index = allEnemies.Count;
             SetPosition(position);
+
+            efeito = SpriteEffects.FlipHorizontally;
+            rec = BoundingBox;
         }
 
         public static void DrawAll(SpriteBatch sb, float elapsedGameTime)
         {
-            foreach (Enemy e in allEnemies)
-                e.Draw(sb, elapsedGameTime);
+            lock(enemyLock)
+            {
+                foreach (Enemy e in activeEnemies)
+                    e.Draw(sb, elapsedGameTime);
+            }
         }
 
         public static void UpdateAll(float elapsedGameTime)
         {
-            foreach(Enemy e in allEnemies)
-                e.Update(elapsedGameTime);
+            lock(enemyLock)
+            {
+                randomEnemy = randEnemy.Next(0, activeEnemies.Count);
+                foreach (Enemy e in activeEnemies)
+                {
+                    e.Update(elapsedGameTime);
+                    if (e.index == randomEnemy)
+                        e.Shoot(elapsedGameTime);
+                }
+            }
+        }
+
+        private void Shoot(float elapsedGameTime)
+        {
+            shootTimer += elapsedGameTime;
+
+            if (shootTimer >= shootNow)
+            {
+                Console.WriteLine("yello");
+                shootTimer = 0;
+            }
         }
 
         new private void Update(float elapsedGameTime)
@@ -62,6 +93,11 @@ namespace Super_Kitty_Game
                     {
                         isRight = !isRight;
                         isDown = true;
+
+                        if (efeito == SpriteEffects.None)
+                            efeito = SpriteEffects.FlipHorizontally;
+                        else
+                            efeito = SpriteEffects.None;
                     }
                 }
 
@@ -76,29 +112,28 @@ namespace Super_Kitty_Game
         
         private void Deactivate()
         {
-            if (activeEnemies.Remove(this))
-                inactiveEnemies.Add(this);
+            lock(enemyLock)
+            {
+                if (activeEnemies.Remove(this))
+                    inactiveEnemies.Add(this);
+            }
         }
 
         public static void Write(BinaryWriter w, MyUDPClient client)
         {
-            bool master = client is MasterClient;
+            
             w.Write((UInt16)activeEnemies.Count);
             foreach (Enemy e in activeEnemies)
             {
-                if (master)
-                {
-                    w.Write((UInt16)e.index);
-                    w.Write((Int16)e.position.X);
-                    w.Write((Int16)e.position.Y);
-                }
+                w.Write((UInt16)e.index);
+                w.Write((Int16)e.position.X);
+                w.Write((Int16)e.position.Y);
             }
         }
 
         public static void Read(BinaryReader r)
         {
             int count = r.ReadUInt16();
-            
         }
 
     }

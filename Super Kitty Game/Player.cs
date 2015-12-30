@@ -38,7 +38,7 @@ namespace Super_Kitty_Game
 
             if (Controller.Shoot(elapsedGameTime))
             {
-                Bullet.Shoot(position, this);
+                Bullet.Shoot(new Vector2(position.X + (FrameSizeX/2), position.Y), this);
             }
             
             Bullet.UpdateAll(elapsedGameTime);

@@ -18,18 +18,22 @@ namespace Super_Kitty_Game
         private float time = 0;
 
         private Rectangle boundingBox; //collider
+        int columns, rows;
 
         public SpriteEffects efeito = SpriteEffects.None;
 
-        public Sprite(Texture2D texture)
+        public Sprite(Texture2D texture, int columns, int rows)
         {
             sprite = texture;
 
             spriteSize = new Point(sprite.Width, sprite.Height);
 
-            frameSize = new Point(texture.Width/6, texture.Height/2);
+            frameSize = new Point(texture.Width/columns, texture.Height/rows);
 
             boundingBox = new Rectangle((int)position.X, (int)position.Y, frameSize.X, frameSize.Y);
+
+            this.columns = columns;
+            this.rows = rows;
 
             computeHeight();
 
@@ -54,6 +58,7 @@ namespace Super_Kitty_Game
         public Rectangle BoundingBox
         {
             get { return boundingBox; }
+            set { boundingBox = value; }
         }
 
         public virtual Sprite SetPosition(Vector2 p)
@@ -84,7 +89,7 @@ namespace Super_Kitty_Game
             {
                 currentFrame.X++;
 
-                if (currentFrame.X > 5)
+                if (currentFrame.X > columns-1)
                 {
                     currentFrame.X = 0;
                 }
@@ -94,5 +99,9 @@ namespace Super_Kitty_Game
             sb.Draw(sprite, position, new Rectangle(currentFrame.X * frameSize.X, currentFrame.Y * frameSize.Y, frameSize.X, frameSize.Y), color, 0, Vector2.Zero, 1, efeito, 0);
         }
 
+       protected float FrameSizeX
+        {
+            get { return frameSize.X; }
+        }
     }
 }

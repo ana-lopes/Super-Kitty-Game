@@ -14,7 +14,7 @@ namespace Super_Kitty_Game
         private static Game1 instance;
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
-        private static Texture2D kittyTexture;
+        private static Texture2D kittyTexture, bulletTexture;
         private static int arenaSizeX = 700, arenaSizeY = 600;
 
         private Dictionary<IPEndPoint, Cat> cats = new Dictionary<IPEndPoint,Cat>();
@@ -44,17 +44,18 @@ namespace Super_Kitty_Game
                 port = MyUDPClient.MasterPort;
             else
                 port = MyUDPClient.NormalPort;
+
             player = new Player(Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString()
                 , port, new Vector2(graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height));
             cats.Add(player.EndPoint, player);
 
             if(client is MasterClient)
             {
-                for (int x = 0; x < 8; x++)
+                for (int x = 0; x < 10; x++)
                 {
                     for (int y = 0; y < 5; y++)
                     {
-                        new Enemy(new Vector2(50 + x * 60, y * 60));
+                        new Enemy(new Vector2(30 + x * 60, y * 60));
                     }
                 }
             }
@@ -64,6 +65,7 @@ namespace Super_Kitty_Game
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             kittyTexture = Content.Load<Texture2D>("kitty.png");
+            bulletTexture = Content.Load<Texture2D>("laser.png");
         }
 
         protected override void UnloadContent()
@@ -116,6 +118,11 @@ namespace Super_Kitty_Game
         static public Texture2D KittyTexture
         {
             get { return kittyTexture; }
+        }
+
+        static public Texture2D BulletTexture
+        {
+            get { return bulletTexture; }
         }
 
         static public Vector2 ArenaSize
