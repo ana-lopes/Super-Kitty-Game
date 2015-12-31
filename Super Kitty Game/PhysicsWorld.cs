@@ -11,15 +11,25 @@ namespace Super_Kitty_Game
 
         public static void CheckColiision()
         {
+            Sprite.auxBullets = new List<Bullet>();
+
             for (int i = 0; i < bodies.Count - 1; i++)
             {
                 for(int j = i + 1; j < bodies.Count; j++)
                 {
                     if(bodies[i].Rec.Intersects(bodies[j].Rec))
                     {
-                        //bodies[i].Owner.Collision(bodies[j].Owner);
+                        bodies[i].Owner.Collision(bodies[j].Owner);
                     }
                 }
+            }
+        }
+
+        public static void UpdateAll(float elapsedGameTime)
+        {
+            foreach(PhysicsBody b in bodies)
+            {
+                b.Update(elapsedGameTime);
             }
         }
 

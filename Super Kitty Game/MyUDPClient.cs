@@ -25,6 +25,7 @@ namespace Super_Kitty_Game
         protected bool registered;
         private IPEndPoint masterEP;
         private bool exiting = false;
+        protected float startTime = 2.0f, startTimer = 0;
                 
         public MyUDPClient(int port, string masterIP)
             : base(port)
@@ -140,6 +141,11 @@ namespace Super_Kitty_Game
             else if (receivedMSG[0] == positionsByte)
             {
                 ReceivePositions(receivedMSG);
+            }
+            
+            else if(receivedMSG[0] == enemyPositionByte)
+            {
+                RecieveEnemies(receivedMSG);
             } 
         }
 
@@ -187,7 +193,36 @@ namespace Super_Kitty_Game
 
             s.Dispose();
             r.Dispose(); 
-        }        
+        }
+
+        private void RecieveEnemies(byte[] receivedMSG)
+        {
+            MemoryStream s = new MemoryStream(receivedMSG);
+            BinaryReader r = new BinaryReader(s);
+
+            r.ReadByte();
+            int index = r.ReadInt16();
+            int x = r.ReadInt16();
+            int y = r.ReadInt16();
+
+            lock (CatsLock)
+            {
+                Enemy enemy;
+
+                if (Enemy.activeEnemies.Count-1 >= index)
+                {
+                    enemy = Enemy.activeEnemies[index];
+                    enemy.SetPosition(new Vector2(x, y));
+                }
+
+                else {
+                    enemy = new Enemy(new Vector2(x, y));
+                }
+            }
+
+            s.Dispose();
+            r.Dispose();
+        }
 
         public Object CatsLock
         {

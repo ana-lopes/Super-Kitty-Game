@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace Super_Kitty_Game
 {
-    class PhysicsBody : IDisposable
+    public class PhysicsBody : IDisposable
     {
         Rectangle tangle;
         Sprite owner;
@@ -18,7 +18,7 @@ namespace Super_Kitty_Game
             PhysicsWorld.AddBody(this);
         }
 
-        public virtual void Update(GameTime gametime)
+        public virtual void Update(float elapsedGameTime)
         {
             tangle.Location = new Point((int)owner.position.X, (int)owner.position.Y);
         }

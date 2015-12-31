@@ -21,9 +21,18 @@ namespace Super_Kitty_Game
         public override void Update(GameTime gameTime)
         {
             sendTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (startTimer >= startTime)
+                PhysicsWorld.CheckColiision();
+            else
+                startTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            PhysicsWorld.UpdateAll((float)gameTime.ElapsedGameTime.TotalSeconds);
+
             if (sendTimer >= sendInterval)
             {
                 SendPositions();
+                SendEnemies();
                 sendTimer = 0;
             }
             BeginReceive(Receive, null);
@@ -48,6 +57,7 @@ namespace Super_Kitty_Game
                     w.Write((Int16)position.Y);
                     w.Write((Int16)cat.efeito);
                     w.Write((Int16)cat.Speed);
+                    w.Write((Int16)cat.Lives);
                     Bullet.Write(w, cat);
                 }
 
@@ -68,13 +78,49 @@ namespace Super_Kitty_Game
             w.Dispose(); 
         }
 
+
+        private void SendEnemies()
+        {
+            MemoryStream s = new MemoryStream();
+            BinaryWriter w = new BinaryWriter(s);
+
+            w.Write(enemyPositionByte);
+            lock(CatsLock)
+            {
+                w.Write((Enemy.activeEnemies.Count));
+                foreach(Enemy e in Enemy.activeEnemies)
+                {
+                    w.Write((Int16)e.index);
+                    w.Write((Int16)e.position.X);
+                    w.Write((Int16)e.position.Y);                    
+                }
+
+                foreach (IPEndPoint ep in Cats.Keys)
+                {
+                    if (ep.ToString() != MasterEP.ToString())
+                    {
+                        try
+                        {
+                            Send(s.GetBuffer(), s.GetBuffer().Length, ep);
+                        }
+                        catch { }
+                    }
+                }
+            }
+
+            s.Dispose();
+            w.Dispose();
+        }
+
         protected override void DecodeMessage(IPEndPoint remoteEP, byte[] receivedMSG)
         {
             base.DecodeMessage(remoteEP, receivedMSG);
+
             if (receivedMSG[0] == registryRequestByte)
             {
                 ReceiveRequest(remoteEP, receivedMSG);
             }
+
             else if (receivedMSG[0] == imHereByte)
             {
                 ReceivePosition(remoteEP, receivedMSG);
@@ -122,6 +168,7 @@ namespace Super_Kitty_Game
             int y = r.ReadInt16();
             int efeito = r.ReadInt16();
             int speed = r.ReadInt16();
+            int lives = r.ReadInt16();
 
             lock (CatsLock)
             {
@@ -138,5 +185,7 @@ namespace Super_Kitty_Game
             s.Dispose();
             r.Dispose();
         }
+
+        
     }
 }

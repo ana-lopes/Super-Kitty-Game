@@ -41,7 +41,7 @@ namespace Super_Kitty_Game
             }
         }
 
-        private void Deactivate()
+        public void Deactivate()
         {
             lock (bulletLock)
             {
@@ -67,8 +67,6 @@ namespace Super_Kitty_Game
             List<Bullet> aux = new List<Bullet>();
             lock (bulletLock)
             {
-                DetectColiision();
-
                 foreach (Bullet b in activeBullets)
                 {
                     if (b.Update(elapsedGameTime))
@@ -92,32 +90,33 @@ namespace Super_Kitty_Game
         {
             position.Y -= elapsedGameTime * speed;
             SetPosition(position);
+
             if (position.Y < -drawSize.Y)
                 return true;
             return false;
         }
 
         //am i doing this right
-        public static void DetectColiision()
-        {
-            List<Bullet> aux = new List<Bullet>();
+        //public static void DetectColiision()
+        //{
+        //    List<Bullet> aux = new List<Bullet>();
 
-            foreach(Bullet b in activeBullets)
-            {
-                foreach(Enemy e in Enemy.activeEnemies)
-                {
-                    if (b.BoundingBox.Intersects(e.BoundingBox))
-                    {
-                        Enemy.activeEnemies.Remove(e);
-                        aux.Add(b);
-                        break;
-                    }
-                }
-            }
+        //    foreach(Bullet b in activeBullets)
+        //    {
+        //        foreach(Enemy e in Enemy.activeEnemies)
+        //        {
+        //            if (b.BoundingBox.Intersects(e.BoundingBox))
+        //            {
+        //                Enemy.activeEnemies.Remove(e);
+        //                aux.Add(b);
+        //                break;
+        //            }
+        //        }
+        //    }
 
-            foreach (Bullet b in aux)
-                b.Deactivate();
-        }
+        //    foreach (Bullet b in aux)
+        //        b.Deactivate();
+        //}
 
         public static void Shoot(Vector2 position, Cat cat)
         {

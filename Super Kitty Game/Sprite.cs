@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using System;
+using System.Collections.Generic;
 
 namespace Super_Kitty_Game
 {
@@ -16,9 +18,12 @@ namespace Super_Kitty_Game
         private Point frameSize;
         private float frameDuration = 0.1f;
         private float time = 0;
+        
+        private PhysicsBody body;
 
-        private Rectangle boundingBox; //collider
         int columns, rows;
+
+        static public List<Bullet> auxBullets = new List<Bullet>();
 
         public SpriteEffects efeito = SpriteEffects.None;
 
@@ -30,7 +35,7 @@ namespace Super_Kitty_Game
 
             frameSize = new Point(texture.Width/columns, texture.Height/rows);
 
-            boundingBox = new Rectangle((int)position.X, (int)position.Y, frameSize.X, frameSize.Y);
+            body = new PhysicsBody(new Rectangle((int)position.X, (int)position.Y, frameSize.X, frameSize.Y), this);
 
             this.columns = columns;
             this.rows = rows;
@@ -52,19 +57,34 @@ namespace Super_Kitty_Game
 
         public virtual void Update(float elapsedGameTime)
         {
-
+            
         }
 
-        public Rectangle BoundingBox
+        public void Collision(Sprite col)
         {
-            get { return boundingBox; }
-            set { boundingBox = value; }
+
+            if (this.GetType() == typeof(Enemy) && col.GetType() == typeof(Bullet))
+            {
+                this.Body.Dispose();
+                Enemy.activeEnemies.Remove((Enemy)this);
+
+                //help meh
+            }
+
+            else if(this.GetType() == typeof(Player) && col.GetType() == typeof(Enemy))
+            {
+                Console.WriteLine("Game Over");
+            }
+
+            else if(this.GetType() == typeof(Player) && col.GetType() == typeof(Bullet))
+            {
+                Console.WriteLine("menos uma vida");
+            }
         }
 
         public virtual Sprite SetPosition(Vector2 p)
         {
-            this.position = p;            
-            boundingBox.Location = new Point((int)position.X, (int)position.Y); //atualiza a posição do retangulo quando a sprite muda de posição
+            this.position = p;
 
             return this;
         }
@@ -102,6 +122,11 @@ namespace Super_Kitty_Game
        protected float FrameSizeX
         {
             get { return frameSize.X; }
+        }
+
+        protected PhysicsBody Body
+        {
+            get { return body; }
         }
     }
 }

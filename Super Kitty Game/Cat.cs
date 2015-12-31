@@ -19,6 +19,8 @@ namespace Super_Kitty_Game
         private List<Bullet> bullets;
         private Object bulletLock = new Object();
 
+        private int lives = 7;
+
 
         public Cat(string ip, int port, Vector2 arena) : base(Game1.KittyTexture, 6, 2)
         {
@@ -81,6 +83,12 @@ namespace Super_Kitty_Game
         public Object BulletLock
         {
             get { return bulletLock; }
+        }
+
+        public int Lives
+        {
+            get { return lives; }
+            set { lives = value; }
         }
     }
 }

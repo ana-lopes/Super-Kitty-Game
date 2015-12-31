@@ -16,8 +16,8 @@ namespace Super_Kitty_Game
         private static Object enemyLock = new Object();
 
         private bool isDown = false, isRight = true;
-        int index;
-        private float timer = 0, moveNow = 1.0f; //move de 20 em 20 segundos
+        public int index;
+        private float timer = 0, moveNow = 1f; //move de 20 em 20 segundos
 
         static private float shootTimer = 0, shootNow = 1f;
 
@@ -35,7 +35,6 @@ namespace Super_Kitty_Game
             SetPosition(position);
 
             efeito = SpriteEffects.FlipHorizontally;
-            rec = BoundingBox;
         }
 
         public static void DrawAll(SpriteBatch sb, float elapsedGameTime)
