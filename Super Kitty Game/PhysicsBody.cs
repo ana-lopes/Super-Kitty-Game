@@ -10,12 +10,25 @@ namespace Super_Kitty_Game
     {
         Rectangle tangle;
         Sprite owner;
+        private bool active;
+
 
         public PhysicsBody(Rectangle tangle, Sprite owner)
         {
             this.tangle = tangle;
             this.owner = owner;
+            Activate();
             PhysicsWorld.AddBody(this);
+        }
+
+        public void Activate()
+        {
+            active = true;
+        }
+
+        public void Deactivate()
+        {
+            active = false;
         }
 
         public virtual void Update(float elapsedGameTime)
@@ -46,6 +59,11 @@ namespace Super_Kitty_Game
         ~PhysicsBody()
         {
             Dispose(false);
+        }
+
+        public bool Active
+        {
+            get { return active; }
         }
 
         public Rectangle Rec

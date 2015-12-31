@@ -15,11 +15,17 @@ namespace Super_Kitty_Game
 
             for (int i = 0; i < bodies.Count - 1; i++)
             {
-                for(int j = i + 1; j < bodies.Count; j++)
+                if (bodies[i].Active)
                 {
-                    if(bodies[i].Rec.Intersects(bodies[j].Rec))
+                    for (int j = i + 1; j < bodies.Count; j++)
                     {
-                        bodies[i].Owner.Collision(bodies[j].Owner);
+                        if (bodies[j].Active)
+                        {
+                            if (bodies[i].Rec.Intersects(bodies[j].Rec))
+                            {
+                                bodies[i].Owner.Collision(bodies[j].Owner);
+                            }
+                        }
                     }
                 }
             }

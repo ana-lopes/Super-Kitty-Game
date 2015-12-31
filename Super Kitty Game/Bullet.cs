@@ -11,67 +11,49 @@ namespace Super_Kitty_Game
 {
     public class Bullet : Sprite
     {
-        private static Object bulletLock = new Object();
-        public static List<Bullet> activeBullets = new List<Bullet>(), inactiveBullets = new List<Bullet>(), all = new List<Bullet>();
-        
-        const float speed = 500;
-        private int index;
-        private Cat owner; 
+        private static Object BulletLock = new Object();
+        public static List<Bullet> all = new List<Bullet>();
 
-        private Bullet(Vector2 position, Cat cat): base(Game1.BulletTexture, 1, 1)
+        const float speed = 500;
+        private Cat owner;
+        private bool active;
+        private int index;
+
+        private Bullet(Vector2 position, Cat cat)
+            : base(Game1.BulletTexture, 1, 1)
         {
-            inactiveBullets.Add(this);
-            Activate(position, cat);
+            Activate(position);
+            owner = cat;
+            lock (owner.BulletLock)
+            {
+                index = cat.Bullets.Count;
+                cat.Bullets.Add(this);
+            }
             all.Add(this);
         }
 
-        private void Activate(Vector2 position, Cat cat)
+        private void Activate(Vector2 position)
         {
             SetPosition(position);
-            lock (bulletLock)
-            {
-                if (inactiveBullets.Remove(this))
-                    activeBullets.Add(this);
-                owner = cat;
-                if (!owner.Bullets.Contains(this))
-                {
-                    index = owner.Bullets.Count;
-                    owner.Bullets.Add(this);
-                }
-            }
+            active = true;
+            this.Body.Activate();
         }
 
         public void Deactivate()
         {
-            lock (bulletLock)
-            {
-                if (activeBullets.Remove(this))
-                    inactiveBullets.Add(this);
-                owner.Bullets.Remove(this);
-                UpdateList(owner.Bullets);
-                owner = null;
-                index = -1;
-            }
-        }
-
-        private static void UpdateList(List<Bullet> list)
-        {
-            foreach (Bullet b in list)
-            {
-                b.index = list.IndexOf(b);
-            }
+            active = false;
+            this.Body.Deactivate();
         }
 
         public static void UpdateAll(float elapsedGameTime)
         {
             List<Bullet> aux = new List<Bullet>();
-            lock (bulletLock)
+            lock (BulletLock)
             {
-                foreach (Bullet b in activeBullets)
+                foreach (Bullet b in all)
                 {
-                    if (b.Update(elapsedGameTime))
+                    if (b.active)
                     {
-
                         if (b.Update(elapsedGameTime))
                         {
                             aux.Add(b);
@@ -120,24 +102,32 @@ namespace Super_Kitty_Game
 
         public static void Shoot(Vector2 position, Cat cat)
         {
-            lock (bulletLock)
+            lock (BulletLock)
             {
-                if (inactiveBullets.Count != 0)
+                bool recycled = false;
+                foreach (Bullet b in cat.Bullets)
                 {
-                    Bullet b = inactiveBullets[0];
-                    b.Activate(position, cat);
+                    if (!b.active)
+                    {
+                        b.Activate(position);
+                        recycled = true;
+                        break;
+                    }
                 }
-                else
+                if (!recycled)
                     new Bullet(position, cat);
-            }      
+            }
         }
-        
+
         public static void DrawAll(SpriteBatch sb, float elapsedGameTime)
         {
-            lock (bulletLock)
+            lock (BulletLock)
             {
-                foreach (Bullet b in activeBullets)
-                    b.Draw(sb, elapsedGameTime);
+                foreach (Bullet b in all)
+                {
+                    if (b.active)
+                        b.Draw(sb, elapsedGameTime);
+                }
             }
         }
 
@@ -145,12 +135,13 @@ namespace Super_Kitty_Game
         {
             lock (cat.BulletLock)
             {
-                List<Bullet> bullets = cat.Bullets;
-                w.Write((UInt16)bullets.Count);
+                List<Bullet> Bullets = cat.Bullets;
+                w.Write((UInt16)Bullets.Count);
 
-                foreach (Bullet b in bullets)
+                foreach (Bullet b in Bullets)
                 {
                     w.Write((UInt16)b.index);
+                    w.Write(Convert.ToUInt16(b.active));
                     w.Write((Int16)b.position.X);
                     w.Write((Int16)b.position.Y);
                 }
@@ -165,12 +156,18 @@ namespace Super_Kitty_Game
                 lock (cat.BulletLock)
                 {
                     int index = r.ReadUInt16();
+                    bool active = Convert.ToBoolean(r.ReadUInt16());
                     Vector2 position = new Vector2(r.ReadInt16(), r.ReadInt16());
-                    while (cat.Bullets.Count <= index)
+
+                    if (!active)
+                        cat.Bullets[index].Deactivate();
+                    else
                     {
-                        Shoot(position, cat);
+                        while (cat.Bullets.Count <= index)
+                        {
+                            Shoot(position, cat);
+                        }
                     }
-                    cat.Bullets[index].Activate(position, cat);
                 }
             }
         }
