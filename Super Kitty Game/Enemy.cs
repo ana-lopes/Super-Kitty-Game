@@ -199,7 +199,9 @@ namespace Super_Kitty_Game
                 {
                     for (int y = 0; y < 5; y++)
                     {
-                        all[y * 10 + x].Activate(new Vector2(30 + x * 60, y * 60));
+                        Enemy e = all[y * 10 + x];
+                        e.Activate(new Vector2(30 + x * 60, y * 60));
+                        e.isRight = true;
                     }
                 }
             }
