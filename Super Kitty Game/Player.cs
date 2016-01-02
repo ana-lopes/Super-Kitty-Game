@@ -44,6 +44,20 @@ namespace Super_Kitty_Game
             Bullet.UpdateAll(elapsedGameTime);
         }
 
+        public override void Collision(Sprite col)
+        {
+            if (col is Enemy)
+            {
+                Console.WriteLine("Game Over");
+            }
+
+            else if (col is Bullet)
+            {
+                if (((Bullet)col).Owner != this)
+                    Console.WriteLine("menos uma vida");
+            }
+        }
+
         public override void Draw(SpriteBatch sb, float elapsedGameTime)
         {
             base.Draw(sb, elapsedGameTime);

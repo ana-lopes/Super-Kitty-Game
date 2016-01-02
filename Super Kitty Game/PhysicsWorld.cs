@@ -7,23 +7,25 @@ namespace Super_Kitty_Game
 {
     static class PhysicsWorld
     {
+        private static Object bodyLock = new Object();
         static List<PhysicsBody> bodies = new List<PhysicsBody>();
 
         public static void CheckColiision()
         {
-            Sprite.auxBullets = new List<Bullet>();
-
-            for (int i = 0; i < bodies.Count - 1; i++)
+            lock (bodyLock)
             {
-                if (bodies[i].Active)
+                for (int i = 0; i < bodies.Count - 1; i++)
                 {
-                    for (int j = i + 1; j < bodies.Count; j++)
+                    if (bodies[i].Active)
                     {
-                        if (bodies[j].Active)
+                        for (int j = i + 1; j < bodies.Count; j++)
                         {
-                            if (bodies[i].Rec.Intersects(bodies[j].Rec))
+                            if (bodies[j].Active)
                             {
-                                bodies[i].Owner.Collision(bodies[j].Owner);
+                                if (bodies[i].Rec.Intersects(bodies[j].Rec))
+                                {
+                                    bodies[i].Owner.Collision(bodies[j].Owner);
+                                }
                             }
                         }
                     }
@@ -33,20 +35,29 @@ namespace Super_Kitty_Game
 
         public static void UpdateAll(float elapsedGameTime)
         {
-            foreach(PhysicsBody b in bodies)
+            lock (bodyLock)
             {
-                b.Update(elapsedGameTime);
+                foreach (PhysicsBody b in bodies)
+                {
+                    b.Update(elapsedGameTime);
+                }
             }
         }
 
         public static void AddBody(PhysicsBody body)
         {
-            bodies.Add(body);
+            lock (bodyLock)
+            {
+                bodies.Add(body);
+            }
         }
 
         public static bool RemoveBody(PhysicsBody body)
         {
-            return bodies.Remove(body);
+            lock (bodyLock)
+            {
+                return bodies.Remove(body);
+            }
         }
     }
 }

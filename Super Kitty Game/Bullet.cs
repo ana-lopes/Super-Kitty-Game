@@ -16,7 +16,9 @@ namespace Super_Kitty_Game
 
         const float speed = 500;
         private Cat owner;
+
         private bool active;
+        private bool sent;
         private int index;
 
         private Bullet(Vector2 position, Cat cat)
@@ -36,6 +38,7 @@ namespace Super_Kitty_Game
         {
             SetPosition(position);
             active = true;
+            sent = false;
             this.Body.Activate();
         }
 
@@ -78,28 +81,6 @@ namespace Super_Kitty_Game
             return false;
         }
 
-        //am i doing this right
-        //public static void DetectColiision()
-        //{
-        //    List<Bullet> aux = new List<Bullet>();
-
-        //    foreach(Bullet b in activeBullets)
-        //    {
-        //        foreach(Enemy e in Enemy.activeEnemies)
-        //        {
-        //            if (b.BoundingBox.Intersects(e.BoundingBox))
-        //            {
-        //                Enemy.activeEnemies.Remove(e);
-        //                aux.Add(b);
-        //                break;
-        //            }
-        //        }
-        //    }
-
-        //    foreach (Bullet b in aux)
-        //        b.Deactivate();
-        //}
-
         public static void Shoot(Vector2 position, Cat cat)
         {
             lock (BulletLock)
@@ -140,36 +121,71 @@ namespace Super_Kitty_Game
 
                 foreach (Bullet b in Bullets)
                 {
-                    w.Write((UInt16)b.index);
                     w.Write(Convert.ToUInt16(b.active));
+                    w.Write(Convert.ToUInt16(!b.sent));                    
+                    b.sent = true;
                     w.Write((Int16)b.position.X);
                     w.Write((Int16)b.position.Y);
                 }
             }
         }
 
-        public static void Read(BinaryReader r, Cat cat)
+        public static void Read(BinaryReader r, Cat cat, bool Client)
         {
             int count = r.ReadUInt16();
             for (int i = 0; i < count; i++)
             {
                 lock (cat.BulletLock)
                 {
-                    int index = r.ReadUInt16();
                     bool active = Convert.ToBoolean(r.ReadUInt16());
+                    bool firstSent = Convert.ToBoolean(r.ReadUInt16());
                     Vector2 position = new Vector2(r.ReadInt16(), r.ReadInt16());
 
-                    if (!active)
-                        cat.Bullets[index].Deactivate();
+                    while (cat.Bullets.Count <= i)
+                    {
+                        Shoot(position, cat);                        
+                    }
+                    Bullet b = cat.Bullets[i];
+
+                    if (Client)
+                    {
+                        if (active)
+                            b.Activate(position);
+                        else
+                            b.Deactivate();
+                    }
                     else
                     {
-                        while (cat.Bullets.Count <= index)
-                        {
-                            Shoot(position, cat);
-                        }
+                        if (firstSent)
+                            b.Activate(position);
+                        else
+                            b.SetPosition(position);
                     }
                 }
             }
+        }
+
+        public static void ReadOwn(BinaryReader r, Cat cat)
+        {
+            int count = r.ReadUInt16();
+            for (int i = 0; i < count; i++)
+            {
+                lock (cat.BulletLock)
+                {
+                    bool active = Convert.ToBoolean(r.ReadUInt16());
+                    bool firstSent = Convert.ToBoolean(r.ReadUInt16());
+                    Vector2 position = new Vector2(r.ReadInt16(), r.ReadInt16());
+
+                    Bullet b = cat.Bullets[i];
+                    if (!active && b.sent)
+                        b.Deactivate();
+                }
+            }
+        }
+
+        public Cat Owner
+        {
+            get { return owner; }
         }
     }
 }

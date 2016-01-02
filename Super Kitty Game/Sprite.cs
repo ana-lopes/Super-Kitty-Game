@@ -60,26 +60,8 @@ namespace Super_Kitty_Game
             
         }
 
-        public void Collision(Sprite col)
+        virtual public void Collision(Sprite col)
         {
-
-            if (this.GetType() == typeof(Enemy) && col.GetType() == typeof(Bullet))
-            {
-                this.Body.Dispose();
-                Enemy.activeEnemies.Remove((Enemy)this);
-
-                //help meh
-            }
-
-            else if(this.GetType() == typeof(Player) && col.GetType() == typeof(Enemy))
-            {
-                Console.WriteLine("Game Over");
-            }
-
-            else if(this.GetType() == typeof(Player) && col.GetType() == typeof(Bullet))
-            {
-                Console.WriteLine("menos uma vida");
-            }
         }
 
         public virtual Sprite SetPosition(Vector2 p)

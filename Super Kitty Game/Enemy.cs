@@ -6,42 +6,43 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Super_Kitty_Game
 {
     public class Enemy : Sprite
     {
-        public static List<Enemy> activeEnemies = new List<Enemy>(), inactiveEnemies = new List<Enemy>(), allEnemies = new List<Enemy>();
-
+        public static List<Enemy> active = new List<Enemy>(), all = new List<Enemy>();
+        static Random randEnemy = new Random();
         private static Object enemyLock = new Object();
-
+        //static private float shootTimer = 0, shootNow = 1f;
+        
         private bool isDown = false, isRight = true;
-        public int index;
+        private bool isActive;
         private float timer = 0, moveNow = 1f; //move de 20 em 20 segundos
 
-        static private float shootTimer = 0, shootNow = 1f;
-
-        bool hitRight = false, hitLeft = false;
-        Rectangle rec;
-
-        static Random randEnemy = new Random();
-        static int randomEnemy;
+        public static void Enemies()
+        {
+            for (int x = 0; x < 10; x++)
+            {
+                for (int y = 0; y < 5; y++)
+                {
+                    new Enemy(new Vector2(30 + x * 60, y * 60));
+                }
+            }
+        }
 
         public Enemy(Vector2 position): base(Game1.KittyTexture, 6, 2)
         {
-            allEnemies.Add(this);
-            activeEnemies.Add(this);
-            index = allEnemies.Count;
-            SetPosition(position);
-
-            efeito = SpriteEffects.FlipHorizontally;
+            Activate(position);
+            all.Add(this);
         }
 
         public static void DrawAll(SpriteBatch sb, float elapsedGameTime)
         {
             lock(enemyLock)
             {
-                foreach (Enemy e in activeEnemies)
+                foreach (Enemy e in active)
                     e.Draw(sb, elapsedGameTime);
             }
         }
@@ -50,26 +51,38 @@ namespace Super_Kitty_Game
         {
             lock(enemyLock)
             {
-                randomEnemy = randEnemy.Next(0, activeEnemies.Count);
-                foreach (Enemy e in activeEnemies)
+                if (active.Count != 0)
                 {
-                    e.Update(elapsedGameTime);
-                    if (e.index == randomEnemy)
-                        e.Shoot(elapsedGameTime);
+                    //int randomEnemy = randEnemy.Next(0, active.Count);
+                    foreach (Enemy e in active)
+                    {
+                        e.Update(elapsedGameTime);
+                    }
+                    //active[randomEnemy].Shoot(elapsedGameTime);
                 }
             }
         }
 
-        private void Shoot(float elapsedGameTime)
+        public override void Collision(Sprite col)
+        {
+            if (col is Bullet)            
+            {
+                Bullet b = (Bullet)col;
+                b.Deactivate();
+                Deactivate();
+            }
+        }
+
+        /*private void Shoot(float elapsedGameTime)
         {
             shootTimer += elapsedGameTime;
 
             if (shootTimer >= shootNow)
             {
-                Console.WriteLine("yello");
+                //Console.WriteLine("yello");
                 shootTimer = 0;
             }
-        }
+        }*/
 
         new private void Update(float elapsedGameTime)
         {
@@ -85,8 +98,8 @@ namespace Super_Kitty_Game
                     else if (!isRight)
                         SetPosition(new Vector2(position.X - 10, position.Y));
 
-                    hitRight = position.X <= 0;
-                    hitLeft = (position.X + drawSize.X) >= Game1.ArenaSize.X;
+                    bool hitRight = position.X <= 0;
+                    bool hitLeft = (position.X + drawSize.X) >= Game1.ArenaSize.X;
 
                     if(hitLeft || hitRight)
                     {
@@ -109,31 +122,87 @@ namespace Super_Kitty_Game
             }
         }
         
+        private void Activate(Vector2 position)
+        {
+            SetPosition(position);
+            if (!isActive)
+            {
+                isActive = true;
+                active.Add(this);
+            }
+            this.Body.Activate();
+            efeito = SpriteEffects.FlipHorizontally;
+        }
+
         private void Deactivate()
         {
-            lock(enemyLock)
+            isActive = false;
+            active.Remove(this);
+            this.Body.Deactivate();
+            if (active.Count == 0)
             {
-                if (activeEnemies.Remove(this))
-                    inactiveEnemies.Add(this);
+                MyUDPClient.Win();
             }
         }
 
-        public static void Write(BinaryWriter w, MyUDPClient client)
+        public static void Write(BinaryWriter w)
         {
-            
-            w.Write((UInt16)activeEnemies.Count);
-            foreach (Enemy e in activeEnemies)
+            lock (enemyLock)
             {
-                w.Write((UInt16)e.index);
-                w.Write((Int16)e.position.X);
-                w.Write((Int16)e.position.Y);
+                w.Write((UInt16)all.Count);
+                foreach (Enemy e in all)
+                {
+                    w.Write(Convert.ToUInt16(e.isActive));
+                    w.Write((Int16)e.position.X);
+                    w.Write((Int16)e.position.Y);
+                    w.Write(Convert.ToUInt16(e.isRight));
+                    w.Write((Int16)e.efeito);
+                }
             }
         }
 
         public static void Read(BinaryReader r)
         {
-            int count = r.ReadUInt16();
+            lock (enemyLock)
+            {
+                int count = r.ReadUInt16();
+                for (int i = 0; i < count; i++)
+                {
+                    bool active = Convert.ToBoolean(r.ReadUInt16());
+                    Vector2 position = new Vector2(r.ReadInt16(), r.ReadInt16());
+                    bool isRight = Convert.ToBoolean(r.ReadUInt16());
+                    SpriteEffects effect = (SpriteEffects)r.ReadInt16();
+
+                    while (all.Count < count)
+                    {
+                        new Enemy(position);
+                    }
+
+                    Enemy e = all[i];
+                    if (active)
+                    {
+                        e.Activate(position);
+                        e.isRight = isRight;
+                        e.efeito = effect;
+                    }
+                    else
+                        e.Deactivate();
+                }
+            }
         }
 
+        public static void Reset()
+        {
+            lock (enemyLock)
+            {
+                for (int x = 0; x < 10; x++)
+                {
+                    for (int y = 0; y < 5; y++)
+                    {
+                        all[y * 10 + x].Activate(new Vector2(30 + x * 60, y * 60));
+                    }
+                }
+            }
+        }
     }
 }

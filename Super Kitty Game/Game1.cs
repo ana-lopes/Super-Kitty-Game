@@ -51,13 +51,7 @@ namespace Super_Kitty_Game
 
             if(client is MasterClient)
             {
-                for (int x = 0; x < 10; x++)
-                {
-                    for (int y = 0; y < 5; y++)
-                    {
-                        new Enemy(new Vector2(30 + x * 60, y * 60));
-                    }
-                }
+                Enemy.Enemies();
             }
         }
 
@@ -86,7 +80,8 @@ namespace Super_Kitty_Game
             client.Update(gameTime);
             Bullet.UpdateAll(elapsedGameTime);
 
-            Enemy.UpdateAll((float)gameTime.ElapsedGameTime.TotalSeconds);
+            if (client is MasterClient)
+                Enemy.UpdateAll((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             base.Update(gameTime);
         }

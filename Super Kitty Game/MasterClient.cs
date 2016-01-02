@@ -7,11 +7,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.IO;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace Super_Kitty_Game
 {
     public class MasterClient : MyUDPClient
     {
+        KeyboardState ksa;
         public MasterClient(int port)
             : base(port, Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString())
         {
@@ -20,22 +22,33 @@ namespace Super_Kitty_Game
 
         public override void Update(GameTime gameTime)
         {
-            sendTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            KeyboardState ks = Keyboard.GetState();
 
-            if (startTimer >= startTime)
-                PhysicsWorld.CheckColiision();
-            else
-                startTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            PhysicsWorld.UpdateAll((float)gameTime.ElapsedGameTime.TotalSeconds);
-
-            if (sendTimer >= sendInterval)
+            if (ks.IsKeyDown(Keys.R) && !ksa.IsKeyDown(Keys.R))
             {
-                SendPositions();
-                SendEnemies();
-                sendTimer = 0;
+                SendReset();
+                Enemy.Reset();
+                end = false; 
             }
-            BeginReceive(Receive, null);
+            else
+            {
+                sendTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (startTimer >= startTime)
+                    PhysicsWorld.CheckColiision();
+                else
+                    startTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                PhysicsWorld.UpdateAll((float)gameTime.ElapsedGameTime.TotalSeconds);
+
+                if (sendTimer >= sendInterval)
+                {
+                    SendPositions();
+                    sendTimer = 0;
+                }
+                BeginReceive(Receive, null);
+            }
+            ksa = ks;
         }
 
         private void SendPositions()
@@ -57,9 +70,9 @@ namespace Super_Kitty_Game
                     w.Write((Int16)position.Y);
                     w.Write((Int16)cat.efeito);
                     w.Write((Int16)cat.Speed);
-                    w.Write((Int16)cat.Lives);
                     Bullet.Write(w, cat);
                 }
+                Enemy.Write(w);
 
                 foreach (IPEndPoint ep in Cats.Keys)
                 {
@@ -78,36 +91,23 @@ namespace Super_Kitty_Game
             w.Dispose(); 
         }
 
-
-        private void SendEnemies()
+        private void SendReset()
         {
             MemoryStream s = new MemoryStream();
             BinaryWriter w = new BinaryWriter(s);
 
-            w.Write(enemyPositionByte);
-            lock(CatsLock)
+            w.Write(resetByte);
+            foreach (IPEndPoint ep in Cats.Keys)
             {
-                w.Write((Enemy.activeEnemies.Count));
-                foreach(Enemy e in Enemy.activeEnemies)
+                if (ep.ToString() != MasterEP.ToString())
                 {
-                    w.Write((Int16)e.index);
-                    w.Write((Int16)e.position.X);
-                    w.Write((Int16)e.position.Y);                    
-                }
-
-                foreach (IPEndPoint ep in Cats.Keys)
-                {
-                    if (ep.ToString() != MasterEP.ToString())
+                    try
                     {
-                        try
-                        {
-                            Send(s.GetBuffer(), s.GetBuffer().Length, ep);
-                        }
-                        catch { }
+                        Send(s.GetBuffer(), s.GetBuffer().Length, ep);
                     }
+                    catch { }
                 }
             }
-
             s.Dispose();
             w.Dispose();
         }
@@ -168,7 +168,6 @@ namespace Super_Kitty_Game
             int y = r.ReadInt16();
             int efeito = r.ReadInt16();
             int speed = r.ReadInt16();
-            int lives = r.ReadInt16();
 
             lock (CatsLock)
             {
@@ -178,14 +177,12 @@ namespace Super_Kitty_Game
                     cat.SetPosition(new Vector2(x, y));
                     cat.efeito = (SpriteEffects)efeito;
                     cat.Speed = speed;
-                    Bullet.Read(r, cat);
+                    Bullet.Read(r, cat, false);
                 }
             }
 
             s.Dispose();
             r.Dispose();
-        }
-
-        
+        }        
     }
 }

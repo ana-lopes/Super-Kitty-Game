@@ -17,8 +17,8 @@ namespace Super_Kitty_Game
         protected float sendTimer = 0;
 
         public const int MasterPort = 9999, NormalPort = 8888;
-        protected const byte registryRequestByte = (byte)'M', registryAcceptByte = (byte)'L', positionsByte = (byte)'P', enemyPositionByte = (byte)'E';
-        protected const byte imHereByte = (byte)'I';
+        protected const byte registryRequestByte = (byte)'M', registryAcceptByte = (byte)'L', positionsByte = (byte)'P';
+        protected const byte imHereByte = (byte)'I', resetByte = (byte)'R';
 
         private Object catsLock = new Object();
         private Dictionary<IPEndPoint, Cat> cats;
@@ -142,11 +142,10 @@ namespace Super_Kitty_Game
             {
                 ReceivePositions(receivedMSG);
             }
-            
-            else if(receivedMSG[0] == enemyPositionByte)
+            else if (receivedMSG[0] == resetByte)
             {
-                RecieveEnemies(receivedMSG);
-            } 
+                ReceiveReset();
+            }
         }
 
         private void ReceiveRegistry()
@@ -185,43 +184,33 @@ namespace Super_Kitty_Game
                         cat.SetPosition(position);
                         cat.efeito = effect;
                         cat.Speed = speed;
-                        Bullet.Read(r, cat);
+                        Bullet.Read(r, cat, true);
                     }
+                    else
+                        Bullet.ReadOwn(r, cats.First().Value);
                 }
             }
+            Enemy.Read(r);
                      
 
             s.Dispose();
             r.Dispose(); 
         }
 
-        private void RecieveEnemies(byte[] receivedMSG)
+        private void ReceiveReset()
         {
-            MemoryStream s = new MemoryStream(receivedMSG);
-            BinaryReader r = new BinaryReader(s);
+            end = false;
+            Enemy.Reset();
+        }
 
-            r.ReadByte();
-            int index = r.ReadInt16();
-            int x = r.ReadInt16();
-            int y = r.ReadInt16();
-
-            lock (CatsLock)
+        protected static bool end = false;
+        static public void Win()
+        {
+            if (!end)
             {
-                Enemy enemy;
-
-                if (Enemy.activeEnemies.Count-1 >= index)
-                {
-                    enemy = Enemy.activeEnemies[index];
-                    enemy.SetPosition(new Vector2(x, y));
-                }
-
-                else {
-                    enemy = new Enemy(new Vector2(x, y));
-                }
+                end = true;
+                MessageBox.Show("GG!, WP, MLG");
             }
-
-            s.Dispose();
-            r.Dispose();
         }
 
         public Object CatsLock
