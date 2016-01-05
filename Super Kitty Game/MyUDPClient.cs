@@ -44,7 +44,11 @@ namespace Super_Kitty_Game
                 sendTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (sendTimer >= sendInterval)
                 {
-                    SendPosition();
+                    foreach (IPEndPoint ep in cats.Keys)
+                    {
+                        if (ep.ToString() != cats.First().Key.ToString())
+                            SendPosition(ep);
+                    }
                     sendTimer = 0;
                 }
             }
@@ -80,7 +84,7 @@ namespace Super_Kitty_Game
             w.Dispose();
         }
 
-        private void SendPosition()
+        public void SendPosition(IPEndPoint ep)
         {
             MemoryStream s = new MemoryStream();
             BinaryWriter w = new BinaryWriter(s);
@@ -95,9 +99,9 @@ namespace Super_Kitty_Game
             w.Write((Int16)position.Y);
             w.Write((Int16)cat.efeito);
             w.Write((Int16)cat.Speed);
-            Bullet.Write(w, cat);
+            Bullet.WriteOwn(w, cat);
 
-            Send(s.GetBuffer(), s.GetBuffer().Length, masterEP);
+            Send(s.GetBuffer(), s.GetBuffer().Length, ep);
 
             s.Dispose();
             w.Dispose();
@@ -142,6 +146,10 @@ namespace Super_Kitty_Game
             {
                 ReceivePositions(receivedMSG);
             }
+            else if (receivedMSG[0] == imHereByte)
+            {
+                ReceivePosition(remoteEP, receivedMSG);
+            }
             else if (receivedMSG[0] == resetByte)
             {
                 ReceiveReset();
@@ -165,26 +173,27 @@ namespace Super_Kitty_Game
             {
                 IPAddress ip = new IPAddress(r.ReadBytes(4));
                 int port = r.ReadUInt16();
-                int x = r.ReadInt16();
+                /*int x = r.ReadInt16();
                 int y = r.ReadInt16();
                 SpriteEffects effect = (SpriteEffects)r.ReadInt16();
-                int speed = r.ReadInt16();
+                int speed = r.ReadInt16();*/
                 IPEndPoint ep = new IPEndPoint(ip, port);
                 lock (catsLock)
                 {
                     if (ep.ToString() != cats.First().Key.ToString())
                     {
-                        Vector2 position = new Vector2(x, y);
+                        //Vector2 position = new Vector2(x, y);
                         Cat cat;
                         if (!cats.TryGetValue(ep, out cat))
                         {
                             cat = new Cat(ep);
                             cats.Add(ep, cat);
                         }
-                        cat.SetPosition(position);
+                        Bullet.ReadOwn(r, cat);
+                        /*cat.SetPosition(position);
                         cat.efeito = effect;
                         cat.Speed = speed;
-                        Bullet.Read(r, cat, true);
+                        Bullet.Read(r, cat, true);*/
                     }
                     else
                         Bullet.ReadOwn(r, cats.First().Value);
@@ -196,6 +205,33 @@ namespace Super_Kitty_Game
             s.Dispose();
             r.Dispose(); 
         }
+        
+        private void ReceivePosition(IPEndPoint remoteEP, byte[] receivedMSG)
+        {
+            MemoryStream s = new MemoryStream(receivedMSG);
+            BinaryReader r = new BinaryReader(s);
+
+            r.ReadByte();
+            int x = r.ReadInt16();
+            int y = r.ReadInt16();
+            int efeito = r.ReadInt16();
+            int speed = r.ReadInt16();
+
+            lock (CatsLock)
+            {
+                Cat cat;
+                if (Cats.TryGetValue(remoteEP, out cat))
+                {
+                    cat.SetPosition(new Vector2(x, y));
+                    cat.efeito = (SpriteEffects)efeito;
+                    cat.Speed = speed;
+                    Bullet.ReadOther(r, cat);
+                }
+            }
+
+            s.Dispose();
+            r.Dispose();
+        }   
 
         private void ReceiveReset()
         {

@@ -112,7 +112,23 @@ namespace Super_Kitty_Game
             }
         }
 
-        public static void Write(BinaryWriter w, Cat cat)
+        public static void WriteOther(BinaryWriter w, Cat cat)
+        {
+            lock (cat.BulletLock)
+            {
+                List<Bullet> Bullets = cat.Bullets;
+                w.Write((UInt16)Bullets.Count);
+
+                foreach (Bullet b in Bullets)
+                {
+                    w.Write(Convert.ToUInt16(b.active));
+                    w.Write(Convert.ToUInt16(!b.sent));
+                    b.sent = true;
+                }
+            }
+        }
+
+        public static void WriteOwn(BinaryWriter w, Cat cat)
         {
             lock (cat.BulletLock)
             {
@@ -130,7 +146,7 @@ namespace Super_Kitty_Game
             }
         }
 
-        public static void Read(BinaryReader r, Cat cat, bool Client)
+        public static void ReadOther(BinaryReader r, Cat cat)
         {
             int count = r.ReadUInt16();
             for (int i = 0; i < count; i++)
@@ -147,20 +163,10 @@ namespace Super_Kitty_Game
                     }
                     Bullet b = cat.Bullets[i];
 
-                    if (Client)
-                    {
-                        if (active)
-                            b.Activate(position);
-                        else
-                            b.Deactivate();
-                    }
+                    if (firstSent)
+                        b.Activate(position);
                     else
-                    {
-                        if (firstSent)
-                            b.Activate(position);
-                        else
-                            b.SetPosition(position);
-                    }
+                        b.SetPosition(position);
                 }
             }
         }
@@ -170,15 +176,19 @@ namespace Super_Kitty_Game
             int count = r.ReadUInt16();
             for (int i = 0; i < count; i++)
             {
-                lock (cat.BulletLock)
+                bool active = Convert.ToBoolean(r.ReadUInt16());
+                bool firstSent = Convert.ToBoolean(r.ReadUInt16());
+                if (cat != null)
                 {
-                    bool active = Convert.ToBoolean(r.ReadUInt16());
-                    bool firstSent = Convert.ToBoolean(r.ReadUInt16());
-                    Vector2 position = new Vector2(r.ReadInt16(), r.ReadInt16());
+                    lock (cat.BulletLock)
+                    {
+                        /*r.ReadInt16();
+                        r.ReadInt16();*/
 
-                    Bullet b = cat.Bullets[i];
-                    if (!active && b.sent)
-                        b.Deactivate();
+                        Bullet b = cat.Bullets[i];
+                        if (!active && b.sent)
+                            b.Deactivate();
+                    }
                 }
             }
         }

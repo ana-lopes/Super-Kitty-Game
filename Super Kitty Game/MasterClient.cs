@@ -43,7 +43,12 @@ namespace Super_Kitty_Game
 
                 if (sendTimer >= sendInterval)
                 {
-                    SendPositions();
+                    SendPositions(); 
+                    foreach (IPEndPoint ep in Cats.Keys)
+                    {
+                        if (ep.ToString() != Cats.First().Key.ToString())
+                            SendPosition(ep);
+                    }
                     sendTimer = 0;
                 }
                 BeginReceive(Receive, null);
@@ -65,12 +70,13 @@ namespace Super_Kitty_Game
                     byte[] ipBytes = cat.EndPoint.Address.GetAddressBytes();
                     w.Write(ipBytes);
                     w.Write((UInt16)cat.EndPoint.Port);
-                    Vector2 position = cat.Position;
+                    /*Vector2 position = cat.Position;
                     w.Write((Int16)position.X);
                     w.Write((Int16)position.Y);
                     w.Write((Int16)cat.efeito);
                     w.Write((Int16)cat.Speed);
-                    Bullet.Write(w, cat);
+                    Bullet.Write(w, cat);*/
+                    Bullet.WriteOther(w, cat);
                 }
                 Enemy.Write(w);
 
@@ -120,11 +126,6 @@ namespace Super_Kitty_Game
             {
                 ReceiveRequest(remoteEP, receivedMSG);
             }
-
-            else if (receivedMSG[0] == imHereByte)
-            {
-                ReceivePosition(remoteEP, receivedMSG);
-            }
         }
 
         private void ReceiveRequest(IPEndPoint remoteEP, byte[] receivedMSG)
@@ -158,31 +159,6 @@ namespace Super_Kitty_Game
             r.Dispose();
         }
 
-        private void ReceivePosition(IPEndPoint remoteEP, byte[] receivedMSG)
-        {
-            MemoryStream s = new MemoryStream(receivedMSG);
-            BinaryReader r = new BinaryReader(s);
-
-            r.ReadByte();
-            int x = r.ReadInt16();
-            int y = r.ReadInt16();
-            int efeito = r.ReadInt16();
-            int speed = r.ReadInt16();
-
-            lock (CatsLock)
-            {
-                Cat cat;
-                if (Cats.TryGetValue(remoteEP, out cat))
-                {
-                    cat.SetPosition(new Vector2(x, y));
-                    cat.efeito = (SpriteEffects)efeito;
-                    cat.Speed = speed;
-                    Bullet.Read(r, cat, false);
-                }
-            }
-
-            s.Dispose();
-            r.Dispose();
-        }        
+             
     }
 }
