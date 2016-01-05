@@ -185,7 +185,13 @@ namespace Super_Kitty_Game
             for (int i = 0; i < count; i++)
             {
                 bool active = Convert.ToBoolean(r.ReadUInt16());
-                bool firstSent = Convert.ToBoolean(r.ReadUInt16());
+                bool firstSent = Convert.ToBoolean(r.ReadUInt16()); 
+                
+                while (cat.Bullets.Count <= i)
+                {
+                    Shoot(cat.Position, cat);
+                }
+
                 if (cat != null)
                 {
                     lock (cat.BulletLock)
