@@ -159,14 +159,22 @@ namespace Super_Kitty_Game
 
                     while (cat.Bullets.Count <= i)
                     {
-                        Shoot(position, cat);                        
+                        Shoot(position, cat);
                     }
+
                     Bullet b = cat.Bullets[i];
 
-                    if (firstSent)
-                        b.Activate(position);
-                    else
-                        b.SetPosition(position);
+                    if (active)
+                    {
+                        if (firstSent)
+                            b.Activate(position);
+                        else
+                            b.SetPosition(position);
+                    }
+                    else 
+                    {
+                        b.Deactivate();  
+                    }
                 }
             }
         }

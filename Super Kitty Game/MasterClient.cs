@@ -43,12 +43,12 @@ namespace Super_Kitty_Game
 
                 if (sendTimer >= sendInterval)
                 {
-                    SendPositions(); 
                     foreach (IPEndPoint ep in Cats.Keys)
                     {
                         if (ep.ToString() != Cats.First().Key.ToString())
                             SendPosition(ep);
                     }
+                    SendPositions(); 
                     sendTimer = 0;
                 }
                 BeginReceive(Receive, null);
@@ -79,7 +79,7 @@ namespace Super_Kitty_Game
                     Bullet.WriteOther(w, cat);
                 }
                 Enemy.Write(w);
-
+                Console.WriteLine(w.BaseStream.Length);
                 foreach (IPEndPoint ep in Cats.Keys)
                 {
                     if (ep.ToString() != MasterEP.ToString())
@@ -88,7 +88,9 @@ namespace Super_Kitty_Game
                         {
                             Send(s.GetBuffer(), s.GetBuffer().Length, ep);
                         }
-                        catch { }
+                        catch 
+                        { 
+                        }
                     }
                 }
             }

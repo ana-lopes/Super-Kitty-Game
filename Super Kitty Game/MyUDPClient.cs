@@ -199,7 +199,12 @@ namespace Super_Kitty_Game
                         Bullet.ReadOwn(r, cats.First().Value);
                 }
             }
-            Enemy.Read(r);
+            try
+            {
+                Enemy.Read(r);
+            }
+            catch
+            { }
                      
 
             s.Dispose();

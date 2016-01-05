@@ -150,6 +150,7 @@ namespace Super_Kitty_Game
             lock (enemyLock)
             {
                 w.Write((UInt16)all.Count);
+                int i = 0;
                 foreach (Enemy e in all)
                 {
                     w.Write(Convert.ToUInt16(e.isActive));
@@ -157,7 +158,10 @@ namespace Super_Kitty_Game
                     w.Write((Int16)e.position.Y);
                     w.Write(Convert.ToUInt16(e.isRight));
                     w.Write((Int16)e.efeito);
+                    i++;
                 }
+                if (i != all.Count)
+                    Console.WriteLine();
             }
         }
 
