@@ -19,20 +19,20 @@ namespace Super_Kitty_Game
         
         private bool isDown = false, isRight = true;
         private bool isActive;
-        private float timer = 0, moveNow = 1f; //move de 20 em 20 segundos
+        private float timer = 0, moveNow = 0.5f; //move de 20 em 20 segundos
 
         public static void Enemies()
         {
-            for (int x = 0; x < 10; x++)
+            for (int x = 0; x < 9; x++)
             {
                 for (int y = 0; y < 5; y++)
                 {
-                    new Enemy(new Vector2(30 + x * 60, y * 60));
+                    new Enemy(new Vector2(30 + x * 70, y * 70));
                 }
             }
         }
 
-        public Enemy(Vector2 position): base(Game1.KittyTexture, 6, 2)
+        public Enemy(Vector2 position): base(Game1.DoggieTexture, 1, 1)
         {
             Activate(position);
             all.Add(this);
@@ -199,12 +199,12 @@ namespace Super_Kitty_Game
         {
             lock (enemyLock)
             {
-                for (int x = 0; x < 10; x++)
+                for (int x = 0; x < 9; x++)
                 {
                     for (int y = 0; y < 5; y++)
                     {
-                        Enemy e = all[y * 10 + x];
-                        e.Activate(new Vector2(30 + x * 60, y * 60));
+                        Enemy e = all[y * 9 + x];
+                        e.Activate(new Vector2(30 + x * 70, y * 70));
                         e.isRight = true;
                     }
                 }

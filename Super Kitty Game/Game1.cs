@@ -14,7 +14,7 @@ namespace Super_Kitty_Game
         private static Game1 instance;
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
-        private static Texture2D kittyTexture, bulletTexture;
+        private static Texture2D kittyTexture, bulletTexture, doggieTexture, spaceTexture;
         private static int arenaSizeX = 700, arenaSizeY = 600;
 
         private Dictionary<IPEndPoint, Cat> cats = new Dictionary<IPEndPoint,Cat>();
@@ -25,7 +25,7 @@ namespace Super_Kitty_Game
         {
             instance = this;
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 300;
+            graphics.PreferredBackBufferWidth = 700;
             graphics.PreferredBackBufferHeight = 600;
             this.IsMouseVisible = true;
             graphics.PreferredBackBufferWidth = arenaSizeX;
@@ -60,6 +60,8 @@ namespace Super_Kitty_Game
             spriteBatch = new SpriteBatch(GraphicsDevice);
             kittyTexture = Content.Load<Texture2D>("kitty.png");
             bulletTexture = Content.Load<Texture2D>("laser.png");
+            doggieTexture = Content.Load<Texture2D>("dog (2).png");
+            spaceTexture = Content.Load<Texture2D>("space.jpg");
         }
 
         protected override void UnloadContent()
@@ -92,6 +94,7 @@ namespace Super_Kitty_Game
             float elapsedGameTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             spriteBatch.Begin();
+            spriteBatch.Draw(spaceTexture, Vector2.Zero, new Rectangle(0, 0, spaceTexture.Width, spaceTexture.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
             lock (client.CatsLock)
             {
                 foreach (Cat cat in cats.Values)
@@ -100,6 +103,7 @@ namespace Super_Kitty_Game
             Bullet.DrawAll(spriteBatch, elapsedGameTime);
 
             Enemy.DrawAll(spriteBatch, (float)gameTime.ElapsedGameTime.TotalSeconds);
+
             spriteBatch.End();
 
             base.Draw(gameTime);
@@ -118,6 +122,11 @@ namespace Super_Kitty_Game
         static public Texture2D BulletTexture
         {
             get { return bulletTexture; }
+        }
+
+        static public Texture2D DoggieTexture
+        {
+            get { return doggieTexture; }
         }
 
         static public Vector2 ArenaSize

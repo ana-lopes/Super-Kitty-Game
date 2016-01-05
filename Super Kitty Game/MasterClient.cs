@@ -79,7 +79,6 @@ namespace Super_Kitty_Game
                     Bullet.WriteOther(w, cat);
                 }
                 Enemy.Write(w);
-                Console.WriteLine(w.BaseStream.Length);
                 foreach (IPEndPoint ep in Cats.Keys)
                 {
                     if (ep.ToString() != MasterEP.ToString())

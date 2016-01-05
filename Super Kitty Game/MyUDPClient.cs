@@ -52,15 +52,15 @@ namespace Super_Kitty_Game
                     sendTimer = 0;
                 }
             }
-            /*
+            
             try
-            {*/
+            {
                 BeginReceive(Receive, null);
-            /*}
+            }
             catch
             {
                 Exit("Connection lost");
-            }*/
+            }
         }
 
         private void SendRequest()
